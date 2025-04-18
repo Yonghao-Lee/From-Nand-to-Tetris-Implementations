@@ -1,7 +1,7 @@
-// This file is part of nand2tetris, as taught in The Hebrew University, and
-// was written by Aviv Yaish. It is an extension to the specifications given
-// [here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017),
-// as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
+// This file is part of nand2tetris, as taught in The Hebrew University, and 
+// was written by Aviv Yaish. It is an extension to the specifications given 
+// [here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017), 
+// as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0 
 // Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 
 // This program illustrates low-level handling of the screen and keyboard
@@ -36,3 +36,51 @@
 //   interactively by pressing and releasing some keyboard keys
 
 // Put your code here.
+
+// The screen memory starts at address 16384 (SCREEN)
+// The keyboard status is at address 24576 (KBD)
+// The screen is 512×256 pixels = 131,072 bits, need 8192 registers to represent the screen
+// black when the pixel is 1, 0 else
+
+@color    // declare color variable
+M=0      // by default is white
+
+(LOOP)
+
+  @SCREEN
+  D=A
+  @pixels
+  M=D         // pixel address, goes from 16384 to 16384 + 8192 == 24576
+
+  @KBD    // keyboard address
+  D=M
+  @BLACK
+  D;JGT     // if(keyboard > 0) goto BLACK
+  
+  @color
+  M=0       // set to white
+  @COLOR_SCREEN
+  0;JMP     // jump to subroutine that colors the screen
+  
+  (BLACK)
+    @color
+    M=-1    // set to black (2's complement 111111111...)
+
+  (COLOR_SCREEN)
+    @color
+    D=M
+    @pixels
+    A=M         // VERY IMPORTANT! indirect address
+    M=D         // color M[pixels] with @color
+    
+    @pixels
+    M=M+1
+    D=M
+        
+    @24576
+    D=D-A
+    @COLOR_SCREEN
+    D;JLT
+
+@LOOP
+0;JMP // infinite loop

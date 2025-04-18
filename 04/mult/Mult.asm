@@ -17,3 +17,41 @@
 // - You can implement any multiplication algorithm you want.
 
 // Put your code here.
+
+// Initialize R2 to be 0
+@R2
+M=0
+
+// Check R1=0? Else we are done
+@R1
+D=M // D register takes the value at R1
+@END
+D;JEQ
+
+// Initialize counter to R1
+@R1
+D=M
+@counter
+M=D
+
+// multiplication loop
+(LOOP)
+    // add R0 to R2
+    @R0
+    D=M
+    @R2
+    M=M+D
+
+    @counter
+    M=M-1
+
+    // If counter >, continue the loop
+    D=M
+    @LOOP
+    D;JGT
+(END)
+
+    // Infinite loop for safety
+    @END
+    0;JMP
+    
