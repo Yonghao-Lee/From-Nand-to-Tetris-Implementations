@@ -40,4 +40,55 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+    // Instruction decoder, if bit 15 is 0 then it's a A-instruction, else C-instruction
+
+    // For A-instruction: Load the value from instruction
+    // For C-instruction: Load ALU output if destination bit d1 is set
+    Mux16(a=instruction, b=ALUout, sel=instruction[15], out=muxAout);
+    Not(in=instruction[15], out=isAInstruction);
+    Or(a=isAInstruction, b=instruction[5], out=loadA);
+    ARegister(in=muxAout, load=loadA, out=Aout, out[0..14]=addressM);
+
+    // D-register handling
+    And(a=instruction[15], b=instruction[4], out=loadD);
+    DRegister(in=ALUout, load=loadD, out=Dout);
+
+    // Calculate ALU output
+    Mux16(a=Aout, b=inM, sel=instruction[12], out=AMout);
+    ALU(x=Dout, y=AMout, 
+        zx=instruction[11], nx=instruction[10], 
+        zy=instruction[9], ny=instruction[8], 
+        f=instruction[7], no=instruction[6], 
+        out=ALUout, out=outM, zr=ZRout, ng=NGout);
+
+    // Memory writing
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // Jump control bits - only valid for C-instructions
+    And(a=instruction[15], b=instruction[0], out=j1);  // Fixed: instruction[0] is j1
+    And(a=instruction[15], b=instruction[1], out=j2);  // Fixed: instruction[1] is j2
+    And(a=instruction[15], b=instruction[2], out=j3);  // Fixed: instruction[2] is j3
+
+    Not(in=ZRout, out=notZR);
+    Not(in=NGout, out=notNG);
+    And(a=notZR, b=notNG, out=POSout);  // Positive output (>0)
+    
+    // Jump conditions
+    And(a=j1, b=POSout, out=JGT);    // JGT: if out > 0 jump
+    And(a=j2, b=ZRout, out=JEQ);     // JEQ: if out = 0 jump
+    And(a=j3, b=NGout, out=JLT);     // JLT: if out < 0 jump
+    Or(a=JGT, b=JEQ, out=JGE);       // JGE: if out >= 0 jump
+    Or(a=JGT, b=JLT, out=JNE);       // JNE: if out != 0 jump
+    Or(a=JEQ, b=JLT, out=JLE);       // JLE: if out <= 0 jump
+    
+    // Unconditional jump (JMP)
+    And(a=j1, b=j2, out=j1j2);
+    And(a=j1j2, b=j3, out=JMP);
+
+    // If any jump condition is true, shouldJump becomes 1
+    Or8Way(in[0]=JGT, in[1]=JEQ, in[2]=JLT, in[3]=JGE, 
+        in[4]=JNE, in[5]=JLE, in[6]=JMP, in[7]=false, out=shouldJump);
+
+    // PC Logic: Priority is reset > load > inc
+    PC(in=Aout, load=shouldJump, inc=true, reset=reset, out[0..14]=pc);
 }

@@ -24,4 +24,40 @@ CHIP ExtendAlu {
      
      PARTS:
      // Put your code here:
+     // Determine the mode based on instruction bits
+     And(a=instruction[8], b=instruction[7], out=useRegularALU);
+     Not(in=instruction[8], out=notInst8);
+     And(a=notInst8, b=instruction[7], out=useShift);
+
+     // Regular ALU operation
+     ALU(x=x, y=y, zx=instruction[5], nx=instruction[4], zy=instruction[3], 
+        ny=instruction[2], f=instruction[1], no=instruction[0], 
+        out=regularOut, zr=regularZr, ng=regularNg);
+
+     // Shift operation
+     // Choose which input to shift x or y
+     Mux16(a=y, b=x, sel=instruction[4], out=shiftInput);
+     ShiftLeft(in=shiftInput, out=leftShift);
+     ShiftRight(in=shiftInput, out=rightShift);
+
+     // Choose left or right based on instruction bit 5
+     Mux16(a=rightShift, b=leftShift, sel=instruction[5], out=shiftOut);
+
+     // Determine if shift result is zero or negative
+     // Split shiftOut into lower and upper halves first
+     And16(a=shiftOut, b=true, out[0..7]=shiftOutLow, out[8..15]=shiftOutHigh, out[15]=MSB);
+
+     // Now use these separate wires with Or8Way
+     Or8Way(in=shiftOutLow, out=orLow);
+     Or8Way(in=shiftOutHigh, out=orHigh);
+     // Result is not zero if any bit is 1
+     Or(a=orLow, b=orHigh, out=notZero);
+     Not(in=notZero, out=shiftZr);
+
+     And(a=MSB, b=true, out=shiftNg);
+
+     // Select final output based on mode
+     Mux16(a=shiftOut, b=regularOut, sel=useRegularALU, out=out);
+     Mux(a=shiftZr, b=regularZr, sel=useRegularALU, out=zr);
+     Mux(a=shiftNg, b=regularNg, sel=useRegularALU, out=ng);
 }

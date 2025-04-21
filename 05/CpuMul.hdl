@@ -38,5 +38,54 @@ CHIP CpuMul {
         pc[15];          // address of next instruction
     
     PARTS:
-    // Put your code here:
+    // Instruction decoding
+    Not(in=instruction[15], out=isAInstruction);
+    
+    // A register logic
+    And(a=instruction[5], b=instruction[15], out=loadAfromC);
+    Or(a=isAInstruction, b=loadAfromC, out=loadA);
+    // Select what value to load into A register
+    Mux16(a=instruction, b=aluOut, sel=instruction[15], out=aRegIn);
+    ARegister(in=aRegIn, load=loadA, out=aRegOut, out[0..14]=addressM);
+
+    // D register logic
+    And(a=instruction[15], b=instruction[4], out=loadD);
+    DRegister(in=aluOut, load=loadD, out=dRegOut);
+
+    // ALU logic
+    // This mux selects Y input for ALU based on a-bit (instruction[12])
+    Mux16(a=aRegOut, b=inM, sel=instruction[12], out=aluInputY);
+    
+    ExtendAlu(
+        x=dRegOut,
+        y=aluInputY,
+        instruction[0..5]=instruction[6..11],
+        instruction[6]=instruction[13],
+        instruction[7]=instruction[14],
+        instruction[8]=instruction[15],
+        out=aluOut,
+        zr=zeroOut,
+        ng=negOut
+    );
+    
+    // Set output M
+    Or16(a=aluOut, b=false, out=outM);
+    
+    // Determine if we should write to memory (d3 bit in C-instruction)
+    And(a=instruction[15], b=instruction[3], out=writeM);
+    
+    // Jump logic
+    And(a=zeroOut, b=instruction[1], out=jeq);  // Jump if zero
+    And(a=negOut, b=instruction[2], out=jlt);   // Jump if negative
+    Or(a=zeroOut, b=negOut, out=zeroOrNeg);
+    Not(in=zeroOrNeg, out=positive);
+    And(a=positive, b=instruction[0], out=jgt); // Jump if positive
+    
+    // Combine jump conditions
+    Or(a=jeq, b=jlt, out=jle);
+    Or(a=jle, b=jgt, out=jumpToA);
+    And(a=instruction[15], b=jumpToA, out=doPCJump);
+    
+    // Program Counter logic
+    PC(in=aRegOut, load=doPCJump, inc=true, reset=reset, out[0..14]=pc);
 }
