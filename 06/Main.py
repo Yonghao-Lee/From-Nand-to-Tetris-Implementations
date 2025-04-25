@@ -26,7 +26,76 @@ def assemble_file(
     # parser = Parser(input_file)
     # Note that you can write to output_file like so:
     # output_file.write("Hello world! \n")
-    pass
+    parser = Parser(input_file)
+    symbol_table = SymbolTable()
+    instruction_address = 0
+
+    # process each command
+    while parser.has_more_commands():
+        command_type = parser.command_type()
+
+        if command_type == "A_COMMAND" or command_type == "C_COMMAND":
+            instruction_address += 1
+        
+        elif command_type == "L_COMMAND":
+            symbol = parser.symbol()
+            symbol_table.add_entry(symbol, instruction_address)
+        
+        parser.advance()
+    
+    # second pass
+    input_file.seek(0)
+
+    parser = Parser(input_file)
+    code = Code()
+    next_var_address = 16
+
+    while parser.has_more_commands():
+        command_type = parser.command_type()
+
+        if command_type == "A_COMMAND":
+            symbol = parser.symbol()
+            if symbol.isdigit():
+                # convert to int
+                address = int(symbol)
+            else:
+                if not symbol_table.contains(symbol):
+                    # add to symbol table
+                    symbol_table.add_entry(symbol, next_var_address)
+                    next_var_address += 1
+                
+                address = symbol_table.get_address(symbol)
+            
+            # write to output file
+            binary = format(address, '016b')
+            output_file.write(binary + "\n")
+        
+        elif command_type == "C_COMMAND":
+            dest = parser.dest()
+            comp = parser.comp()
+            jump = parser.jump()
+
+            # Check if this is a shift operation
+            if comp in ["A<<", "D<<", "M<<", "A>>", "D>>", "M>>"]:
+                # For shift operations, encode specially
+                comp_bits = code.comp(comp)
+                
+                # For shift operations, all destination bits should be 000
+                dest_bits = "010" if dest == "D" else "000"
+                binary = "101" + comp_bits + dest_bits + "000"  # Fixed jump bits for shift
+            else:
+                # Standard C-command encoding
+                dest_bits = code.dest(dest)
+                comp_bits = code.comp(comp)
+                jump_bits = code.jump(jump)
+                binary = "111" + comp_bits + dest_bits + jump_bits
+                
+            output_file.write(binary + '\n') 
+        parser.advance()
+
+
+
+
 
 
 if "__main__" == __name__:
