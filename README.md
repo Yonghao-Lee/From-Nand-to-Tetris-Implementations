@@ -1,19 +1,19 @@
-# 💾 From Nand to Tetris – Implementations
+# From Nand to Tetris – Implementations
 
 Projects and implementations from the **Nand to Tetris** course.  
 Covers building a computer from the ground up: logic gates, CPU, assembler, VM translator, and compiler stages.
 
-## 📂 Structure
+## Structure
 
 - `projects/` – Implementations from each course project (1–12)  
 - `hdl/` – Hardware modules (e.g., ALU, CPU, Memory) in HDL  
-- `assembler/`, `vm/`, `compiler/` – Software toolchain components in Python/Java  
+- `assembler/`, `vm/`, `compiler/` – Software toolchain components in Python
 - `tests/` – Test scripts and comparison files
 
-## ⚙️ Tools Used
+## Tools Used
 
 - **Hardware Simulator** (provided by course)  
-- **Python / Java** for translator and compiler parts  
+- **Python for translator and compiler parts  
 - Platform: macOS/Linux
 
 
