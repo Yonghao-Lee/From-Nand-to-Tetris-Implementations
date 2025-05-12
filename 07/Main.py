@@ -12,20 +12,36 @@ from Parser import Parser
 from CodeWriter import CodeWriter
 
 
-def translate_file(
-        input_file: typing.TextIO, output_file: typing.TextIO) -> None:
-    """Translates a single file.
-
-    Args:
-        input_file (typing.TextIO): the file to translate.
-        output_file (typing.TextIO): writes all output to this file.
+def translate_file(input_file, output_file, writer=None) -> CodeWriter:
     """
-    # Your code goes here!
-    # It might be good to start with something like:
-    # parser = Parser(input_file)
-    # code_writer = CodeWriter(output_file)
-    pass
+    Translates a single VM file to Hack assembly.
+    Returns the CodeWriter instance used for translation.
+    """
+    input_filename, _ = os.path.splitext(os.path.basename(input_file.name))
+    
+    # If no writer is provided, create a new one
+    if writer is None:
+        writer = CodeWriter(output_file)
+        
+    writer.set_file_name(input_filename)
 
+    # Create a parser for this input file
+    parser = Parser(input_file)
+    
+    # 1) advance → 2) inspect → 3) emit
+    while parser.has_more_commands():
+        parser.advance()                            # ← move to the next command
+        writer._write_lines([f"// {parser.current_command}"])        
+        ctype = parser.command_type()
+        if ctype is parser.C_ARITHMETIC:
+            # use arg1() (just the operation name, e.g. "add", "eq")
+            writer.write_arithmetic(parser.arg1())
+        elif ctype in (parser.C_PUSH, parser.C_POP):
+            # parser.arg2() is already an int if your Parser returns it so
+            # you can pass it directly rather than casting again
+            writer.write_push_pop(ctype, parser.arg1(), parser.arg2())
+    
+    return writer
 
 if "__main__" == __name__:
     # Parses the input path and calls translate_file on each input file.
@@ -47,9 +63,14 @@ if "__main__" == __name__:
         output_path, extension = os.path.splitext(argument_path)
     output_path += ".asm"
     with open(output_path, 'w') as output_file:
+        writer = None  # Initialize writer variable to track the CodeWriter
         for input_path in files_to_translate:
             filename, extension = os.path.splitext(input_path)
             if extension.lower() != ".vm":
                 continue
             with open(input_path, 'r') as input_file:
-                translate_file(input_file, output_file)
+                writer = translate_file(input_file, output_file, writer)
+        
+        # Call close() on the CodeWriter to add the infinite loop
+        if writer:
+            writer.close()

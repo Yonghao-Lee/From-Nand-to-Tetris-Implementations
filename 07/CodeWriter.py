@@ -1,172 +1,203 @@
-"""
-This file is part of nand2tetris, as taught in The Hebrew University, and
-was written by Aviv Yaish. It is an extension to the specifications given
-[here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017),
-as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
-Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
-"""
 import typing
-
+import os
 
 class CodeWriter:
-    """Translates VM commands into Hack assembly code."""
+    """Translates VM commands into Hack assembly code for the Hack computer."""
 
+    # ────────────────── initialisation ──────────────────
     def __init__(self, output_stream: typing.TextIO) -> None:
-        """Initializes the CodeWriter.
+        self.output: typing.TextIO = output_stream
+        self.label_counter: int = 0        # for generating unique labels
+        self.current_vm_filename: str = "" # current .vm file being translated
+        # Project 8 bookkeeping (ignored by Project 7)
+        self.current_function_name: str = ""
+        self.call_counter: int = 0
 
-        Args:
-            output_stream (typing.TextIO): output stream.
-        """
-        # Your code goes here!
-        # Note that you can write to output_stream like so:
-        # output_stream.write("Hello world! \n")
-        pass
+    # ────────────────── low‑level helpers ──────────────────
+    def _write_comment(self, text: str) -> None:
+        self.output.write(f"// {text}\n")
 
+    def _write_lines(self, lines: list[str]) -> None:
+        """Write several assembly lines at once."""
+        for line in lines:
+            self.output.write(line + "\n")
+
+    # stack‑pointer helpers
+    def _increment_sp(self) -> None:
+        self._write_lines(["@SP", "M=M+1"])
+
+    def _decrement_sp(self) -> None:
+        self._write_lines(["@SP", "M=M-1"])
+
+    # push / pop helpers
+    def _push_D_to_stack(self) -> None:
+        self._write_lines([
+            "@SP", "A=M", "M=D"
+        ])
+        self._increment_sp()
+
+    def _pop_stack_to_D(self) -> None:
+        self._decrement_sp()
+        self._write_lines(["A=M", "D=M"])
+
+    # file‑scope helpers
     def set_file_name(self, filename: str) -> None:
-        """Informs the code writer that the translation of a new VM file is 
-        started.
+        """Called once for every .vm file to reset bookkeeping."""
+        self.current_vm_filename = os.path.splitext(os.path.basename(filename))[0]
+        self.current_function_name = ""
+        self.call_counter = 0
+        
+    def close(self):
+        self._write_comment("Infinite loop at end")
+        self._write_lines(["(END)", "@END", "0;JMP"])
+        self.output.close()    
 
-        Args:
-            filename (str): The name of the VM file.
-        """
-        # Your code goes here!
-        # This function is useful when translating code that handles the
-        # static segment. For example, in order to prevent collisions between two
-        # .vm files which push/pop to the static segment, one can use the current
-        # file's name in the assembly variable's name and thus differentiate between
-        # static variables belonging to different files.
-        # To avoid problems with Linux/Windows/MacOS differences with regards
-        # to filenames and paths, you are advised to parse the filename in
-        # the function "translate_file" in Main.py using python's os library,
-        # For example, using code similar to:
-        # input_filename, input_extension = os.path.splitext(os.path.basename(input_file.name))
-        pass
-
+    # ────────────────── arithmetic / logical commands ──────────────────
     def write_arithmetic(self, command: str) -> None:
-        """Writes assembly code that is the translation of the given 
-        arithmetic command. For the commands eq, lt, gt, you should correctly
-        compare between all numbers our computer supports, and we define the
-        value "true" to be -1, and "false" to be 0.
+        self._write_comment(f"Arithmetic: {command}")
 
-        Args:
-            command (str): an arithmetic command.
-        """
-        # Your code goes here!
-        pass
+        # binary ops
+        if command in ("add", "sub", "and", "or"):
+            self._pop_stack_to_D()   # y
+            self._decrement_sp()     # x
+            op = {"add": "+", "sub": "-", "and": "&", "or": "|"}[command]
+            self._write_lines(["A=M", f"M=M{op}D"])
+            self._increment_sp()
+            return
 
+        # unary ops
+        if command in ("neg", "not"):
+            op = {"neg": "-", "not": "!"}[command]
+            self._write_lines(["@SP", "A=M-1", f"M={op}M"])
+            return
+
+        # comparisons
+        if command in ("eq", "gt", "lt"):
+            self._pop_stack_to_D()   # y
+            self._decrement_sp()     # x
+            self._write_lines(["A=M", "D=M-D"])
+            true_lbl = f"{command.upper()}_TRUE_{self.label_counter}"
+            end_lbl  = f"{command.upper()}_END_{self.label_counter}"
+            jump = {"eq": "JEQ", "gt": "JGT", "lt": "JLT"}[command]
+            self.label_counter += 1
+            self._write_lines([
+                f"@{true_lbl}", f"D;{jump}",
+                "@SP", "A=M", "M=0",
+                f"@{end_lbl}", "0;JMP",
+                f"({true_lbl})",
+                "@SP", "A=M", "M=-1",
+                f"({end_lbl})"
+            ])
+            self._increment_sp()
+            return
+
+        # shift left (*2)
+        if command == "shiftleft":
+            self._write_comment("shiftleft (*2)")
+            self._write_lines(["@SP", "A=M-1", "D=M", "M=D+M"])
+            return
+
+        # arithmetic shift right (/2)
+        if command == "shiftright":
+            lbl = self.label_counter
+            self.label_counter += 1
+            self._write_comment("shiftright (/2, arithmetic)")
+            self._write_lines([
+                # load operand
+                "@SP", "A=M-1", "D=M",
+                # flag sign
+                "@R15", "M=0",
+                f"@SHR_POS_{lbl}", "D;JGE",
+                "@R15", "M=-1", "D=-D",
+                f"(SHR_POS_{lbl})",
+                # set dividend & quotient
+                "@R13", "M=0",      # quotient
+                "@R14", "M=D",      # dividend
+                f"(SHR_LOOP_{lbl})",
+                "@R14", "D=M", "@2", "D=D-A",
+                f"@SHR_DONE_{lbl}", "D;JLT",
+                "@2", "D=A", "@R14", "M=M-D",  # dividend -= 2
+                "@R13", "M=M+1",                     # quotient++
+                f"@SHR_LOOP_{lbl}", "0;JMP",
+                f"(SHR_DONE_{lbl})",
+                # apply sign
+                "@R15", "D=M",
+                f"@SHR_APPLY_{lbl}", "D;JNE",
+                "@R13", "D=M",
+                f"@SHR_END_{lbl}", "0;JMP",
+                f"(SHR_APPLY_{lbl})",
+                "@R13", "D=M", "D=-D",
+                f"(SHR_END_{lbl})",
+                "@SP", "A=M-1", "M=D"
+            ])
+            return
+
+        raise ValueError(f"Unknown arithmetic command: {command}")
+
+    # ────────────────── push / pop commands ──────────────────
     def write_push_pop(self, command: str, segment: str, index: int) -> None:
-        """Writes assembly code that is the translation of the given 
-        command, where command is either C_PUSH or C_POP.
+        self._write_comment(f"{'push' if command == 'C_PUSH' else 'pop'} {segment} {index}")
+        seg = {"local": "LCL", "argument": "ARG", "this": "THIS", "that": "THAT"}
 
-        Args:
-            command (str): "C_PUSH" or "C_POP".
-            segment (str): the memory segment to operate on.
-            index (int): the index in the memory segment.
-        """
-        # Your code goes here!
-        # Note: each reference to "static i" appearing in the file Xxx.vm should
-        # be translated to the assembly symbol "Xxx.i". In the subsequent
-        # assembly process, the Hack assembler will allocate these symbolic
-        # variables to the RAM, starting at address 16.
-        pass
+        if command == "C_PUSH":
+            if segment == "constant":
+                self._write_lines([f"@{index}", "D=A"])
+                self._push_D_to_stack()
+                return
+            if segment in seg:
+                base = seg[segment]
+                self._write_lines([
+                    f"@{index}", "D=A", f"@{base}", "A=M+D", "D=M"
+                ])
+                self._push_D_to_stack()
+                return
+            if segment == "temp":
+                if not 0 <= index <= 7:
+                    raise ValueError("Temp index out of bounds (0‑7)")
+                self._write_lines([f"@{5+index}", "D=M"])
+                self._push_D_to_stack()
+                return
+            if segment == "pointer":
+                if index not in (0, 1):
+                    raise ValueError("Pointer index must be 0 or 1")
+                self._write_lines([f"@{3+index}", "D=M"])
+                self._push_D_to_stack()
+                return
+            if segment == "static":
+                var = f"{self.current_vm_filename}.{index}"
+                self._write_lines([f"@{var}", "D=M"])
+                self._push_D_to_stack()
+                return
+            raise ValueError(f"Unknown PUSH segment: {segment}")
 
-    def write_label(self, label: str) -> None:
-        """Writes assembly code that affects the label command. 
-        Let "Xxx.foo" be a function within the file Xxx.vm. The handling of
-        each "label bar" command within "Xxx.foo" generates and injects the symbol
-        "Xxx.foo$bar" into the assembly code stream.
-        When translating "goto bar" and "if-goto bar" commands within "foo",
-        the label "Xxx.foo$bar" must be used instead of "bar".
+        if command == "C_POP":
+            if segment == "constant":
+                raise ValueError("Cannot pop to constant segment")
+            if segment in seg:
+                base = seg[segment]
+                self._write_lines([
+                    f"@{index}", "D=A", f"@{base}", "D=M+D", "@R13", "M=D"
+                ])
+                self._pop_stack_to_D()
+                self._write_lines(["@R13", "A=M", "M=D"])
+                return
+            if segment == "temp":
+                if not 0 <= index <= 7:
+                    raise ValueError("Temp index out of bounds (0‑7)")
+                self._pop_stack_to_D()
+                self._write_lines([f"@{5+index}", "M=D"])
+                return
+            if segment == "pointer":
+                if index not in (0, 1):
+                    raise ValueError("Pointer index must be 0 or 1")
+                self._pop_stack_to_D()
+                self._write_lines([f"@{3+index}", "M=D"])
+                return
+            if segment == "static":
+                var = f"{self.current_vm_filename}.{index}"
+                self._pop_stack_to_D()
+                self._write_lines([f"@{var}", "M=D"])
+                return
+            raise ValueError(f"Unknown POP segment: {segment}")
 
-        Args:
-            label (str): the label to write.
-        """
-        # This is irrelevant for project 7,
-        # you will implement this in project 8!
-        pass
-    
-    def write_goto(self, label: str) -> None:
-        """Writes assembly code that affects the goto command.
-
-        Args:
-            label (str): the label to go to.
-        """
-        # This is irrelevant for project 7,
-        # you will implement this in project 8!
-        pass
-    
-    def write_if(self, label: str) -> None:
-        """Writes assembly code that affects the if-goto command. 
-
-        Args:
-            label (str): the label to go to.
-        """
-        # This is irrelevant for project 7,
-        # you will implement this in project 8!
-        pass
-    
-    def write_function(self, function_name: str, n_vars: int) -> None:
-        """Writes assembly code that affects the function command. 
-        The handling of each "function Xxx.foo" command within the file Xxx.vm
-        generates and injects a symbol "Xxx.foo" into the assembly code stream,
-        that labels the entry-point to the function's code.
-        In the subsequent assembly process, the assembler translates this 
-        symbol into the physical address where the function code starts.
-
-        Args:
-            function_name (str): the name of the function.
-            n_vars (int): the number of local variables of the function.
-        """
-        # This is irrelevant for project 7,
-        # you will implement this in project 8!
-        # The pseudo-code of "function function_name n_vars" is:
-        # (function_name)       // injects a function entry label into the code
-        # repeat n_vars times:  // n_vars = number of local variables
-        #   push constant 0     // initializes the local variables to 0
-        pass
-    
-    def write_call(self, function_name: str, n_args: int) -> None:
-        """Writes assembly code that affects the call command. 
-        Let "Xxx.foo" be a function within the file Xxx.vm.
-        The handling of each "call" command within Xxx.foo's code generates and
-        injects a symbol "Xxx.foo$ret.i" into the assembly code stream, where
-        "i" is a running integer (one such symbol is generated for each "call"
-        command within "Xxx.foo").
-        This symbol is used to mark the return address within the caller's 
-        code. In the subsequent assembly process, the assembler translates this
-        symbol into the physical memory address of the command immediately
-        following the "call" command.
-
-        Args:
-            function_name (str): the name of the function to call.
-            n_args (int): the number of arguments of the function.
-        """
-        # This is irrelevant for project 7,
-        # you will implement this in project 8!
-        # The pseudo-code of "call function_name n_args" is:
-        # push return_address   // generates a label and pushes it to the stack
-        # push LCL              // saves LCL of the caller
-        # push ARG              // saves ARG of the caller
-        # push THIS             // saves THIS of the caller
-        # push THAT             // saves THAT of the caller
-        # ARG = SP-5-n_args     // repositions ARG
-        # LCL = SP              // repositions LCL
-        # goto function_name    // transfers control to the callee
-        # (return_address)      // injects the return address label into the code
-        pass
-    
-    def write_return(self) -> None:
-        """Writes assembly code that affects the return command."""
-        # This is irrelevant for project 7,
-        # you will implement this in project 8!
-        # The pseudo-code of "return" is:
-        # frame = LCL                   // frame is a temporary variable
-        # return_address = *(frame-5)   // puts the return address in a temp var
-        # *ARG = pop()                  // repositions the return value for the caller
-        # SP = ARG + 1                  // repositions SP for the caller
-        # THAT = *(frame-1)             // restores THAT for the caller
-        # THIS = *(frame-2)             // restores THIS for the caller
-        # ARG = *(frame-3)              // restores ARG for the caller
-        # LCL = *(frame-4)              // restores LCL for the caller
-        # goto return_address           // go to the return address
-        pass
+        raise ValueError("Invalid push/pop command type")

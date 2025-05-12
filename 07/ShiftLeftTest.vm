@@ -1,0 +1,3 @@
+// Tests shiftleft operation (multiply by 2)
+push constant 4
+shiftleft
