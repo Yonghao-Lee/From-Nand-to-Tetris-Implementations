@@ -20,7 +20,7 @@ class Code:
             str: 3-bit long binary code of the given mnemonic.
         """
         dest_codes = {
-            "": "000",      # No destination    
+            "": "000",      # No destination
             "M": "001",     # Memory[A]
             "D": "010",     # D register
             "MD": "011",    # Memory[A] and D register
@@ -34,8 +34,16 @@ class Code:
 
     @staticmethod
     def comp(mnemonic: str) -> str:
-        # 1. clean up whitespace
+        """
+        Args:
+            mnemonic (str): a comp mnemonic string.
+
+        Returns:
+            str: 7-bit long binary code of the given mnemonic.
+        """
+        # 1. clean up whitespace (both leading/trailing and internal)
         m = mnemonic.strip()
+        m = ''.join(m.split())  # Remove all whitespace
 
         # 2. handle the 6 shift ops
         if Code.is_shift(m):
@@ -57,10 +65,19 @@ class Code:
         }
 
         # 4. lookup
-        return comp_codes[m]
+        return comp_codes.get(m, "0000000")  # Default to "0000000" if mnemonic not found
 
     @staticmethod
     def is_shift(mnemonic: str) -> bool:
+        """
+        Check if the mnemonic is a shift operation.
+        
+        Args:
+            mnemonic (str): A comp mnemonic string.
+            
+        Returns:
+            bool: True if it's a shift operation, False otherwise.
+        """
         shifts = {'A<<', 'D<<', 'M<<', 'A>>', 'D>>', 'M>>'}
         return mnemonic in shifts
     
@@ -83,10 +100,17 @@ class Code:
             "JLE": "110",  # If out <= 0, jump
             "JMP": "111"   # Unconditional jump
         }
-        return jump_codes.get(mnemonic, "000")  # Default to "000" if mnemonic not found
+        return jump_codes.get(mnemonic.strip(), "000")  # Default to "000" if mnemonic not found, and strip whitespace
 
     @staticmethod
     def shift_comp(mnemonic: str) -> str:
+        """
+        Args:
+            mnemonic (str): a shift operation mnemonic string.
+            
+        Returns:
+            str: 7-bit long binary code for the given shift operation.
+        """
         shift_codes = {
             'A<<': '0100000',
             'D<<': '0110000',
@@ -95,4 +119,4 @@ class Code:
             'D>>': '0010000',
             'M>>': '1000000',
         }
-        return shift_codes[mnemonic]
+        return shift_codes.get(mnemonic, "0000000")  # Default to "0000000" if mnemonic not found

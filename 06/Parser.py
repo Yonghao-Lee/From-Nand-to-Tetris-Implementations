@@ -120,7 +120,7 @@ class Parser:
             return ""
         
         # Check if there's a destination (contains =)
-        if '=' in self.current_command:  # THIS IS WRONG! Should check for ';'
+        if '=' in self.current_command:
             return self.current_command.split('=')[0].strip()
         
         # No destination
@@ -160,7 +160,7 @@ class Parser:
         
         # Check if there's a jump (contains ;)
         if ';' in self.current_command:
-            return self.current_command.split(';')[1]
+            return self.current_command.split(';')[1].strip()  # Added .strip() to handle whitespace
         
         # No jump
         return ""
