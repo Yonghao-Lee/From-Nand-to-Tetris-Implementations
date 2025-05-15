@@ -1,5 +1,4 @@
 // push constant 7
-// push constant 7
 @7
 D=A
 @SP
@@ -8,7 +7,6 @@ M=D
 @SP
 M=M+1
 // push constant 8
-// push constant 8
 @8
 D=A
 @SP
@@ -16,8 +14,7 @@ A=M
 M=D
 @SP
 M=M+1
-// add
-// Arithmetic command: add
+// Arithmetic: add
 @SP
 M=M-1
 A=M

@@ -12,36 +12,39 @@ from Parser import Parser
 from CodeWriter import CodeWriter
 
 
-def translate_file(input_file, output_file, writer=None) -> CodeWriter:
-    """
-    Translates a single VM file to Hack assembly.
-    Returns the CodeWriter instance used for translation.
-    """
-    input_filename, _ = os.path.splitext(os.path.basename(input_file.name))
-    
-    # If no writer is provided, create a new one
-    if writer is None:
-        writer = CodeWriter(output_file)
-        
-    writer.set_file_name(input_filename)
+def translate_file(
+        input_file: typing.TextIO, output_file: typing.TextIO) -> None:
+    """Translates a single file.
 
-    # Create a parser for this input file
+    Args:
+        input_file (typing.TextIO): the file to translate.
+        output_file (typing.TextIO): writes all output to this file.
+    """
+    # Your code goes here!
+    # It might be good to start with something like:
+    # parser = Parser(input_file)
+    # code_writer = CodeWriter(output_file)
     parser = Parser(input_file)
-    
-    # 1) advance → 2) inspect → 3) emit
+    code_writer = CodeWriter(output_file)
+
+    # Set the file name for the code writer (for static variable handling)
+    input_filename = os.path.basename(input_file.name)
+    file_name_without_extension = os.path.splitext(input_filename)[0]
+    code_writer.set_file_name(file_name_without_extension)
+
+    # Process all VM commands
     while parser.has_more_commands():
-        parser.advance()                            # ← move to the next command
-        writer._write_lines([f"// {parser.current_command}"])        
-        ctype = parser.command_type()
-        if ctype is parser.C_ARITHMETIC:
-            # use arg1() (just the operation name, e.g. "add", "eq")
-            writer.write_arithmetic(parser.arg1())
-        elif ctype in (parser.C_PUSH, parser.C_POP):
-            # parser.arg2() is already an int if your Parser returns it so
-            # you can pass it directly rather than casting again
-            writer.write_push_pop(ctype, parser.arg1(), parser.arg2())
-    
-    return writer
+        parser.advance()
+        
+        command_type = parser.command_type()
+        
+        if command_type == "C_ARITHMETIC":
+            # For arithmetic commands, arg1 contains the command itself
+            code_writer.write_arithmetic(parser.arg1())
+        
+        elif command_type in ["C_PUSH", "C_POP"]:
+            # For push/pop commands, pass segment and index
+            code_writer.write_push_pop(command_type, parser.arg1(), parser.arg2())
 
 if "__main__" == __name__:
     # Parses the input path and calls translate_file on each input file.
@@ -63,14 +66,9 @@ if "__main__" == __name__:
         output_path, extension = os.path.splitext(argument_path)
     output_path += ".asm"
     with open(output_path, 'w') as output_file:
-        writer = None  # Initialize writer variable to track the CodeWriter
         for input_path in files_to_translate:
             filename, extension = os.path.splitext(input_path)
             if extension.lower() != ".vm":
                 continue
             with open(input_path, 'r') as input_file:
-                writer = translate_file(input_file, output_file, writer)
-        
-        # Call close() on the CodeWriter to add the infinite loop
-        if writer:
-            writer.close()
+                translate_file(input_file, output_file)
