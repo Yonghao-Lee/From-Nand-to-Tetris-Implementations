@@ -46,6 +46,7 @@ def translate_file(
             # For push/pop commands, pass segment and index
             code_writer.write_push_pop(command_type, parser.arg1(), parser.arg2())
 
+     
 if "__main__" == __name__:
     # Parses the input path and calls translate_file on each input file.
     # This opens both the input and the output files!
@@ -72,3 +73,5 @@ if "__main__" == __name__:
                 continue
             with open(input_path, 'r') as input_file:
                 translate_file(input_file, output_file)
+        
+        CodeWriter(output_file).close()

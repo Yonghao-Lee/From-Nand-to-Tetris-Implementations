@@ -332,3 +332,8 @@ A=M
 M=D
 @SP
 M=M+1
+// VM Translator - Project 7
+// End of program
+(END)
+@END
+0;JMP

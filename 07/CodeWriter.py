@@ -95,7 +95,7 @@ class CodeWriter:
                 
             # Push result back to stack
             self._write_push_to_stack()
-            
+             
         # Unary operations: neg, not
         elif command in ["neg", "not"]:
             self._write_pop_from_stack()  # D = top of stack
@@ -236,14 +236,86 @@ class CodeWriter:
             
         # Shift operations
         elif command == "shiftleft":
-            self._write_pop_from_stack()  # D = top of stack
-            self.output.write("D=D<<\n")  # D = D << 1 (multiply by 2)
-            self._write_push_to_stack()
-            
+            # Left shift is equivalent to adding the number to itself
+            self.output.write("@SP\n")
+            self.output.write("A=M-1\n")
+            self.output.write("D=M\n")    # Load value into D
+            self.output.write("M=D+M\n")  # Double it (equivalent to left shift)
+                    
         elif command == "shiftright":
-            self._write_pop_from_stack()  # D = top of stack
-            self.output.write("D=D>>>\n")  # D = D >> 1 (divide by 2)
-            self._write_push_to_stack()
+            # Right shift = division by 2
+            # We need to use proper bit manipulation for Hack assembly
+            
+            # Simple implementation using subtraction and counter
+            self.output.write("@SP\n")
+            self.output.write("A=M-1\n")
+            self.output.write("D=M\n")    # D = value on top of stack
+            
+            # Store sign bit (for restoring later if negative)
+            self.output.write("@R13\n")
+            self.output.write("M=0\n")    # Initialize R13 to 0 (positive)
+            
+            # Check if negative
+            self.output.write(f"@NEG_CHECK_{self.label_counter}\n")
+            self.output.write("D;JGE\n")  # Skip if positive
+            
+            # Handle negative number - set flag
+            self.output.write("@R13\n")
+            self.output.write("M=-1\n")   # Mark as negative in R13
+            self.output.write("@SP\n")
+            self.output.write("A=M-1\n")
+            self.output.write("M=-M\n")   # Make value positive for division
+            
+            self.output.write(f"(NEG_CHECK_{self.label_counter})\n")
+            
+            # Get the value for division
+            self.output.write("@SP\n")
+            self.output.write("A=M-1\n")
+            self.output.write("D=M\n")    # D = value (positive now)
+            
+            # Divide by 2 using a loop
+            self.output.write("@R14\n")   # R14 will hold the result
+            self.output.write("M=0\n")    # Initialize result to 0
+            self.output.write("@R15\n")   # R15 will be our counter
+            self.output.write("M=D\n")    # Initialize counter to original value
+            
+            # Division loop
+            self.output.write(f"(DIV_LOOP_{self.label_counter})\n")
+            self.output.write("@R15\n")
+            self.output.write("D=M\n")    # D = counter
+            self.output.write("@2\n")
+            self.output.write("D=D-A\n")  # D = counter - 2
+            self.output.write(f"@DIV_END_{self.label_counter}\n")
+            self.output.write("D;JLT\n")  # If counter < 2, division is done
+            
+            # Still dividing
+            self.output.write("@R15\n")
+            self.output.write("M=D\n")    # Update counter = counter - 2
+            self.output.write("@R14\n")
+            self.output.write("M=M+1\n")  # Increment result
+            self.output.write(f"@DIV_LOOP_{self.label_counter}\n")
+            self.output.write("0;JMP\n")  # Continue loop
+            
+            self.output.write(f"(DIV_END_{self.label_counter})\n")
+            self.output.write("@R14\n")
+            self.output.write("D=M\n")    # D = result of division
+            self.output.write("@SP\n")
+            self.output.write("A=M-1\n")
+            self.output.write("M=D\n")    # Store division result
+            
+            # Check if we need to restore negative sign
+            self.output.write("@R13\n")
+            self.output.write("D=M\n")    # Get sign flag
+            self.output.write(f"@END_SHIFT_{self.label_counter}\n")
+            self.output.write("D;JEQ\n")  # Jump if was positive
+            
+            # Was negative, restore negative sign
+            self.output.write("@SP\n")
+            self.output.write("A=M-1\n")
+            self.output.write("M=-M\n")   # Make negative again
+            
+            self.output.write(f"(END_SHIFT_{self.label_counter})\n")
+            self.label_counter += 1
             
         else:
             raise ValueError(f"Unknown arithmetic command: {command}")
@@ -377,12 +449,11 @@ class CodeWriter:
             raise ValueError(f"Unknown command type: {command}")
             
     def close(self) -> None:
-        """Closes the output file."""
+        """Writes termination code."""
         self._write_comment("End of program")
         self.output.write("(END)\n")
         self.output.write("@END\n")
         self.output.write("0;JMP\n")
-        self.output.close()
 
     # Project 8 functions (placeholders for now)
     def write_label(self, label: str) -> None:
