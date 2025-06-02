@@ -1,0 +1,75 @@
+class Bullet {
+    field int x, y;
+    field int speed;
+    field boolean active;
+    field boolean isPlayerBullet;
+    field boolean value; // true=1, false=0
+    
+    constructor Bullet new(int ax, int ay, boolean player) {
+        let x = ax;
+        let y = ay;
+        let isPlayerBullet = player;
+        let active = true;
+        let value = (Utils.random(2) = 1); // Random 1 or 0
+        
+        if (isPlayerBullet) {
+            let speed = -6;
+            let value = true; // Player shoots 1s
+        } else {
+            let speed = 4;
+            let value = false; // Gates shoot 0s
+        }
+        return this;
+    }
+    
+    method void update() {
+        if (~active) { return; }
+        
+        do erase();
+        let y = y + speed;
+        
+        if ((y < 10) | (y > 240)) {
+            let active = false;
+            return;
+        }
+        
+        do draw();
+        return;
+    }
+    
+    method void draw() {
+        if (~active) { return; }
+        
+        do Output.moveCursor(y / 11, x / 8);
+        if (value) {
+            do Output.printChar(49); // '1'
+        } else {
+            do Output.printChar(48); // '0'
+        }
+        return;
+    }
+    
+    method void erase() {
+        do Output.moveCursor(y / 11, x / 8);
+        do Output.printChar(32); // Space
+        return;
+    }
+    
+    method boolean collidesWith(int tx, int ty, int tw, int th) {
+        return (x > tx) & (x < (tx + tw)) & (y > ty) & (y < (ty + th));
+    }
+    
+    method void deactivate() {
+        do erase();
+        let active = false;
+        return;
+    }
+    
+    method boolean isActive() { return active; }
+    
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}
+

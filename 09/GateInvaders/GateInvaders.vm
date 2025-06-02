@@ -1,0 +1,1580 @@
+function GateInvaders.new 0
+push constant 15
+call Memory.alloc 1
+pop pointer 0
+call Player.new 0
+pop this 0
+call GateFleet.new 0
+pop this 1
+call BulletManager.new 0
+pop this 2
+call ParticleSystem.new 0
+pop this 3
+call PowerUpManager.new 0
+pop this 4
+call UI.new 0
+pop this 5
+push constant 0
+pop this 6
+push constant 3
+pop this 7
+push constant 1
+pop this 8
+push constant 0
+pop this 9
+push constant 0
+pop this 10
+push constant 0
+pop this 13
+push constant 1
+neg
+pop this 14
+push constant 5
+call Array.new 1
+pop this 11
+push pointer 0
+call GateInvaders.resetKeys 1
+pop temp 0
+push pointer 0
+call GateInvaders.initFunnyMessages 1
+pop temp 0
+push pointer 0
+return
+function GateInvaders.initFunnyMessages 0
+push argument 0
+pop pointer 0
+push constant 10
+call Array.new 1
+pop this 12
+push constant 0
+push this 12
+add
+push constant 21
+call String.new 1
+push constant 78
+call String.appendChar 2
+push constant 65
+call String.appendChar 2
+push constant 78
+call String.appendChar 2
+push constant 68
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 121
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 100
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 1
+push this 12
+add
+push constant 34
+call String.new 1
+push constant 84
+call String.appendChar 2
+push constant 104
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 99
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 88
+call String.appendChar 2
+push constant 79
+call String.appendChar 2
+push constant 82
+call String.appendChar 2
+push constant 45
+call String.appendChar 2
+push constant 98
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 2
+push this 12
+add
+push constant 30
+call String.new 1
+push constant 68
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 39
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 98
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 118
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 44
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 78
+call String.appendChar 2
+push constant 79
+call String.appendChar 2
+push constant 84
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 3
+push this 12
+add
+push constant 28
+call String.new 1
+push constant 84
+call String.appendChar 2
+push constant 104
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 102
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 78
+call String.appendChar 2
+push constant 65
+call String.appendChar 2
+push constant 78
+call String.appendChar 2
+push constant 68
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 4
+push this 12
+add
+push constant 27
+call String.new 1
+push constant 89
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 39
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 121
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 70
+call String.appendChar 2
+push constant 76
+call String.appendChar 2
+push constant 73
+call String.appendChar 2
+push constant 80
+call String.appendChar 2
+push constant 112
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 5
+push this 12
+add
+push constant 24
+call String.new 1
+push constant 77
+call String.appendChar 2
+push constant 85
+call String.appendChar 2
+push constant 88
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 119
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 102
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 104
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 107
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 104
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 63
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 6
+push this 12
+add
+push constant 31
+call String.new 1
+push constant 73
+call String.appendChar 2
+push constant 39
+call String.appendChar 2
+push constant 109
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 104
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 118
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 99
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 98
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 107
+call String.appendChar 2
+push constant 100
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 119
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 7
+push this 12
+add
+push constant 17
+call String.new 1
+push constant 71
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 102
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 104
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 114
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 8
+push this 12
+add
+push constant 21
+call String.new 1
+push constant 89
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 117
+call String.appendChar 2
+push constant 39
+call String.appendChar 2
+push constant 118
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 98
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 110
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 68
+call String.appendChar 2
+push constant 69
+call String.appendChar 2
+push constant 45
+call String.appendChar 2
+push constant 77
+call String.appendChar 2
+push constant 85
+call String.appendChar 2
+push constant 88
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 100
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 9
+push this 12
+add
+push constant 30
+call String.new 1
+push constant 84
+call String.appendChar 2
+push constant 104
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 39
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 109
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 100
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 115
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 97
+call String.appendChar 2
+push constant 116
+call String.appendChar 2
+push constant 101
+call String.appendChar 2
+push constant 32
+call String.appendChar 2
+push constant 108
+call String.appendChar 2
+push constant 111
+call String.appendChar 2
+push constant 103
+call String.appendChar 2
+push constant 105
+call String.appendChar 2
+push constant 99
+call String.appendChar 2
+push constant 33
+call String.appendChar 2
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push constant 0
+return
+function GateInvaders.run 2
+push argument 0
+pop pointer 0
+push constant 0
+not
+pop local 1
+push this 5
+call UI.drawTitleScreen 1
+pop temp 0
+label WHILE_EXP0
+push local 1
+not
+if-goto WHILE_END0
+call Keyboard.keyPressed 0
+pop local 0
+push pointer 0
+push local 0
+call GateInvaders.handleInput 2
+pop temp 0
+push this 9
+push constant 1
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push pointer 0
+call GateInvaders.update 1
+pop temp 0
+push pointer 0
+call GateInvaders.render 1
+pop temp 0
+push constant 30
+call Sys.wait 1
+pop temp 0
+label IF_FALSE0
+push this 9
+push constant 0
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 2
+push this 11
+add
+pop pointer 1
+push that 0
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push pointer 0
+call GateInvaders.startGame 1
+pop temp 0
+label IF_FALSE2
+label IF_FALSE1
+push this 9
+push constant 2
+eq
+push this 9
+push constant 3
+eq
+or
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push constant 2
+push this 11
+add
+pop pointer 1
+push that 0
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push pointer 0
+call GateInvaders.resetGame 1
+pop temp 0
+push constant 0
+pop this 9
+push this 5
+call UI.drawTitleScreen 1
+pop temp 0
+label IF_FALSE4
+label IF_FALSE3
+push constant 4
+push this 11
+add
+pop pointer 1
+push that 0
+if-goto IF_TRUE5
+goto IF_FALSE5
+label IF_TRUE5
+push constant 0
+pop local 1
+label IF_FALSE5
+push this 10
+push constant 1
+add
+pop this 10
+goto WHILE_EXP0
+label WHILE_END0
+push pointer 0
+call GateInvaders.dispose 1
+pop temp 0
+push constant 0
+return
+function GateInvaders.handleInput 0
+push argument 0
+pop pointer 0
+push pointer 0
+call GateInvaders.resetKeys 1
+pop temp 0
+push argument 1
+push constant 130
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+push this 11
+add
+push constant 0
+not
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+label IF_FALSE0
+push argument 1
+push constant 132
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 1
+push this 11
+add
+push constant 0
+not
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+label IF_FALSE1
+push argument 1
+push constant 32
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push constant 2
+push this 11
+add
+push constant 0
+not
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+label IF_FALSE2
+push argument 1
+push constant 80
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push constant 3
+push this 11
+add
+push constant 0
+not
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+label IF_FALSE3
+push argument 1
+push constant 81
+eq
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push constant 4
+push this 11
+add
+push constant 0
+not
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+label IF_FALSE4
+push constant 0
+return
+function GateInvaders.resetKeys 1
+push argument 0
+pop pointer 0
+push constant 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push constant 5
+lt
+not
+if-goto WHILE_END0
+push local 0
+push this 11
+add
+push constant 0
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
+function GateInvaders.startGame 0
+push argument 0
+pop pointer 0
+push constant 1
+pop this 9
+call Screen.clearScreen 0
+pop temp 0
+push this 5
+call UI.drawGameBorder 1
+pop temp 0
+push this 5
+push this 6
+call UI.updateScore 2
+pop temp 0
+push this 5
+push this 7
+call UI.updateLives 2
+pop temp 0
+push this 5
+push this 8
+call UI.updateLevel 2
+pop temp 0
+push pointer 0
+push constant 0
+call GateInvaders.showMessage 2
+pop temp 0
+push constant 0
+return
+function GateInvaders.showMessage 0
+push argument 0
+pop pointer 0
+push argument 1
+pop this 14
+push constant 60
+pop this 13
+push constant 0
+return
+function GateInvaders.update 1
+push argument 0
+pop pointer 0
+push constant 0
+push this 11
+add
+pop pointer 1
+push that 0
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 0
+call Player.moveLeft 1
+pop temp 0
+label IF_FALSE0
+push constant 1
+push this 11
+add
+pop pointer 1
+push that 0
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push this 0
+call Player.moveRight 1
+pop temp 0
+label IF_FALSE1
+push constant 2
+push this 11
+add
+pop pointer 1
+push that 0
+push this 0
+call Player.canShoot 1
+and
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push this 2
+push this 0
+call Player.getX 1
+push constant 12
+add
+push this 0
+call Player.getY 1
+call BulletManager.addPlayerBullet 3
+pop temp 0
+push this 0
+call Player.resetShootCooldown 1
+pop temp 0
+label IF_FALSE2
+push this 0
+call Player.update 1
+pop temp 0
+push this 1
+push this 10
+call GateFleet.update 2
+pop temp 0
+push this 2
+call BulletManager.update 1
+pop temp 0
+push this 3
+call ParticleSystem.update 1
+pop temp 0
+push this 4
+call PowerUpManager.update 1
+pop temp 0
+push this 13
+push constant 0
+gt
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push this 13
+push constant 1
+sub
+pop this 13
+label IF_FALSE3
+push constant 200
+push this 8
+push constant 20
+call Math.multiply 2
+sub
+pop local 0
+push local 0
+push constant 50
+lt
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push constant 50
+pop local 0
+label IF_FALSE4
+push local 0
+call Utils.random 1
+push constant 1
+eq
+if-goto IF_TRUE5
+goto IF_FALSE5
+label IF_TRUE5
+push this 1
+push this 2
+call GateFleet.shootBullet 2
+pop temp 0
+push constant 3
+call Utils.random 1
+push constant 1
+eq
+if-goto IF_TRUE6
+goto IF_FALSE6
+label IF_TRUE6
+push pointer 0
+push constant 10
+call Utils.random 1
+call GateInvaders.showMessage 2
+pop temp 0
+label IF_FALSE6
+label IF_FALSE5
+push pointer 0
+call GateInvaders.checkCollisions 1
+pop temp 0
+push this 1
+call GateFleet.isEmpty 1
+if-goto IF_TRUE7
+goto IF_FALSE7
+label IF_TRUE7
+push this 8
+push constant 5
+eq
+if-goto IF_TRUE8
+goto IF_FALSE8
+label IF_TRUE8
+push pointer 0
+call GateInvaders.victory 1
+pop temp 0
+goto IF_END8
+label IF_FALSE8
+push pointer 0
+call GateInvaders.nextLevel 1
+pop temp 0
+label IF_END8
+label IF_FALSE7
+push this 5
+push this 6
+call UI.updateScore 2
+pop temp 0
+push this 13
+push constant 0
+gt
+if-goto IF_TRUE9
+goto IF_FALSE9
+label IF_TRUE9
+push this 5
+push this 14
+push this 12
+add
+pop pointer 1
+push that 0
+call UI.displayMessage 2
+pop temp 0
+label IF_FALSE9
+push constant 0
+return
+function GateInvaders.checkCollisions 6
+push argument 0
+pop pointer 0
+push constant 0
+pop local 0
+label WHILE_EXP0
+push local 0
+push this 2
+call BulletManager.getPlayerBulletCount 1
+lt
+not
+if-goto WHILE_END0
+push this 2
+push local 0
+call BulletManager.getPlayerBullet 2
+pop local 2
+push local 2
+call Bullet.isActive 1
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 0
+pop local 1
+push constant 0
+pop local 5
+label WHILE_EXP1
+push local 1
+push this 1
+call GateFleet.getCount 1
+lt
+push local 5
+not
+and
+not
+if-goto WHILE_END1
+push this 1
+push local 1
+call GateFleet.getGate 2
+pop local 3
+push local 3
+call Gate.isAlive 1
+push local 2
+push local 3
+call Gate.getX 1
+push local 3
+call Gate.getY 1
+push constant 32
+push constant 24
+call Bullet.collidesWith 5
+and
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 3
+call Gate.destroy 1
+pop temp 0
+push local 2
+call Bullet.deactivate 1
+pop temp 0
+push this 3
+push local 3
+call Gate.getX 1
+push constant 16
+add
+push local 3
+call Gate.getY 1
+push constant 12
+add
+call ParticleSystem.createExplosion 3
+pop temp 0
+push this 6
+push local 3
+call Gate.getPoints 1
+add
+pop this 6
+push constant 0
+not
+pop local 5
+push pointer 0
+push local 3
+call Gate.getDeathMessage 1
+call GateInvaders.showMessage 2
+pop temp 0
+push constant 8
+call Utils.random 1
+push constant 1
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push this 4
+push local 3
+call Gate.getX 1
+push constant 16
+add
+push local 3
+call Gate.getY 1
+call PowerUpManager.spawn 3
+pop temp 0
+label IF_FALSE2
+label IF_FALSE1
+push local 1
+push constant 1
+add
+pop local 1
+goto WHILE_EXP1
+label WHILE_END1
+label IF_FALSE0
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+pop local 0
+label WHILE_EXP2
+push local 0
+push this 2
+call BulletManager.getAlienBulletCount 1
+lt
+not
+if-goto WHILE_END2
+push this 2
+push local 0
+call BulletManager.getAlienBullet 2
+pop local 2
+push local 2
+call Bullet.isActive 1
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push local 2
+push this 0
+call Player.getX 1
+push this 0
+call Player.getY 1
+push constant 24
+push constant 16
+call Bullet.collidesWith 5
+if-goto IF_TRUE4
+goto IF_FALSE4
+label IF_TRUE4
+push local 2
+call Bullet.deactivate 1
+pop temp 0
+push this 3
+push this 0
+call Player.getX 1
+push constant 12
+add
+push this 0
+call Player.getY 1
+push constant 8
+add
+call ParticleSystem.createExplosion 3
+pop temp 0
+push pointer 0
+call GateInvaders.playerHit 1
+pop temp 0
+label IF_FALSE4
+label IF_FALSE3
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP2
+label WHILE_END2
+push constant 0
+pop local 0
+label WHILE_EXP3
+push local 0
+push this 4
+call PowerUpManager.getCount 1
+lt
+not
+if-goto WHILE_END3
+push this 4
+push local 0
+call PowerUpManager.getPowerUp 2
+pop local 4
+push local 4
+call PowerUp.isActive 1
+if-goto IF_TRUE5
+goto IF_FALSE5
+label IF_TRUE5
+push local 4
+push this 0
+call Player.getX 1
+push this 0
+call Player.getY 1
+push constant 24
+push constant 16
+call PowerUp.collidesWith 5
+if-goto IF_TRUE6
+goto IF_FALSE6
+label IF_TRUE6
+push local 4
+call PowerUp.collect 1
+pop temp 0
+push pointer 0
+push local 4
+call PowerUp.getType 1
+call GateInvaders.applyPowerUp 2
+pop temp 0
+label IF_FALSE6
+label IF_FALSE5
+push local 0
+push constant 1
+add
+pop local 0
+goto WHILE_EXP3
+label WHILE_END3
+push this 1
+call GateFleet.getLowestY 1
+push constant 200
+gt
+if-goto IF_TRUE7
+goto IF_FALSE7
+label IF_TRUE7
+push pointer 0
+push constant 7
+call GateInvaders.showMessage 2
+pop temp 0
+push pointer 0
+call GateInvaders.gameOver 1
+pop temp 0
+label IF_FALSE7
+push constant 0
+return
+function GateInvaders.applyPowerUp 0
+push argument 0
+pop pointer 0
+push argument 1
+push constant 0
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 7
+push constant 1
+add
+pop this 7
+push this 5
+push this 7
+call UI.updateLives 2
+pop temp 0
+push pointer 0
+push constant 9
+call GateInvaders.showMessage 2
+pop temp 0
+label IF_FALSE0
+push argument 1
+push constant 1
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push this 0
+call Player.activateRapidFire 1
+pop temp 0
+push pointer 0
+push constant 4
+call GateInvaders.showMessage 2
+pop temp 0
+label IF_FALSE1
+push argument 1
+push constant 2
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push this 0
+call Player.activateShield 1
+pop temp 0
+push pointer 0
+push constant 6
+call GateInvaders.showMessage 2
+pop temp 0
+label IF_FALSE2
+push constant 0
+return
+function GateInvaders.playerHit 0
+push argument 0
+pop pointer 0
+push this 0
+call Player.hasShield 1
+not
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 7
+push constant 1
+sub
+pop this 7
+push this 5
+push this 7
+call UI.updateLives 2
+pop temp 0
+push this 7
+push constant 0
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push pointer 0
+call GateInvaders.gameOver 1
+pop temp 0
+goto IF_END1
+label IF_FALSE1
+push pointer 0
+push constant 2
+call GateInvaders.showMessage 2
+pop temp 0
+label IF_END1
+goto IF_END0
+label IF_FALSE0
+push this 0
+call Player.deactivateShield 1
+pop temp 0
+label IF_END0
+push constant 0
+return
+function GateInvaders.nextLevel 0
+push argument 0
+pop pointer 0
+push this 8
+push constant 1
+add
+pop this 8
+push this 5
+push this 8
+call UI.updateLevel 2
+pop temp 0
+push this 1
+push this 8
+call GateFleet.reset 2
+pop temp 0
+push this 2
+call BulletManager.clearAll 1
+pop temp 0
+push this 4
+call PowerUpManager.clearAll 1
+pop temp 0
+push this 8
+push constant 2
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push pointer 0
+push constant 1
+call GateInvaders.showMessage 2
+pop temp 0
+label IF_FALSE0
+push this 8
+push constant 3
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push pointer 0
+push constant 3
+call GateInvaders.showMessage 2
+pop temp 0
+label IF_FALSE1
+push this 8
+push constant 4
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push pointer 0
+push constant 5
+call GateInvaders.showMessage 2
+pop temp 0
+label IF_FALSE2
+push this 8
+push constant 5
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push pointer 0
+push constant 8
+call GateInvaders.showMessage 2
+pop temp 0
+label IF_FALSE3
+push constant 0
+return
+function GateInvaders.gameOver 0
+push argument 0
+pop pointer 0
+push constant 2
+pop this 9
+push this 5
+push this 6
+call UI.drawGameOver 2
+pop temp 0
+push constant 0
+return
+function GateInvaders.victory 0
+push argument 0
+pop pointer 0
+push constant 3
+pop this 9
+push this 5
+push this 6
+call UI.drawVictory 2
+pop temp 0
+push constant 0
+return
+function GateInvaders.resetGame 0
+push argument 0
+pop pointer 0
+push constant 0
+pop this 6
+push constant 3
+pop this 7
+push constant 1
+pop this 8
+push constant 0
+pop this 10
+push constant 0
+pop this 13
+push this 1
+push constant 1
+call GateFleet.reset 2
+pop temp 0
+push this 2
+call BulletManager.clearAll 1
+pop temp 0
+push this 3
+call ParticleSystem.clearAll 1
+pop temp 0
+push this 4
+call PowerUpManager.clearAll 1
+pop temp 0
+push this 0
+call Player.reset 1
+pop temp 0
+push constant 0
+return
+function GateInvaders.render 0
+push argument 0
+pop pointer 0
+push this 0
+call Player.draw 1
+pop temp 0
+push this 1
+call GateFleet.draw 1
+pop temp 0
+push this 2
+call BulletManager.draw 1
+pop temp 0
+push this 3
+call ParticleSystem.draw 1
+pop temp 0
+push this 4
+call PowerUpManager.draw 1
+pop temp 0
+push constant 0
+return
+function GateInvaders.dispose 0
+push argument 0
+pop pointer 0
+push this 0
+call Player.dispose 1
+pop temp 0
+push this 1
+call GateFleet.dispose 1
+pop temp 0
+push this 2
+call BulletManager.dispose 1
+pop temp 0
+push this 3
+call ParticleSystem.dispose 1
+pop temp 0
+push this 4
+call PowerUpManager.dispose 1
+pop temp 0
+push this 5
+call UI.dispose 1
+pop temp 0
+push this 11
+call Array.dispose 1
+pop temp 0
+push this 12
+call Array.dispose 1
+pop temp 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return

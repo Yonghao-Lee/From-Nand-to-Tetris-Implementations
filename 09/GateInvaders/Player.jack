@@ -1,0 +1,142 @@
+class Player {
+    field int x, y;
+    field int speed;
+    field int shootCooldown;
+    field boolean rapidFire;
+    field int rapidFireTimer;
+    field boolean shield;
+    field int shieldTimer;
+    
+    constructor Player new() {
+        let x = 256;
+        let y = 220;
+        let speed = 3;
+        let shootCooldown = 0;
+        let rapidFire = false;
+        let rapidFireTimer = 0;
+        let shield = false;
+        let shieldTimer = 0;
+        return this;
+    }
+    
+    method void update() {
+        if (shootCooldown > 0) {
+            let shootCooldown = shootCooldown - 1;
+        }
+        
+        if (rapidFireTimer > 0) {
+            let rapidFireTimer = rapidFireTimer - 1;
+            if (rapidFireTimer = 0) {
+                let rapidFire = false;
+            }
+        }
+        
+        if (shieldTimer > 0) {
+            let shieldTimer = shieldTimer - 1;
+            if (shieldTimer = 0) {
+                let shield = false;
+            }
+        }
+        return;
+    }
+    
+    method void moveLeft() {
+        if (x > 10) {
+            do erase();
+            let x = x - speed;
+            do draw();
+        }
+        return;
+    }
+    
+    method void moveRight() {
+        if (x < 478) {
+            do erase();
+            let x = x + speed;
+            do draw();
+        }
+        return;
+    }
+    
+    method boolean canShoot() {
+        return shootCooldown = 0;
+    }
+    
+    method void resetShootCooldown() {
+        if (rapidFire) {
+            let shootCooldown = 5;
+        } else {
+            let shootCooldown = 15;
+        }
+        return;
+    }
+    
+    method void activateRapidFire() {
+        let rapidFire = true;
+        let rapidFireTimer = 300;
+        return;
+    }
+    
+    method void activateShield() {
+        let shield = true;
+        let shieldTimer = 150;
+        return;
+    }
+    
+    method void deactivateShield() {
+        let shield = false;
+        let shieldTimer = 0;
+        return;
+    }
+    
+    method boolean hasShield() {
+        return shield;
+    }
+    
+    method int getX() { return x; }
+    method int getY() { return y; }
+    
+    method void draw() {
+        // Draw HDL programmer (person with laptop)
+        // Head
+        do Screen.drawCircle(x + 12, y + 4, 4);
+        // Body
+        do Screen.drawLine(x + 12, y + 8, x + 12, y + 14);
+        // Arms
+        do Screen.drawLine(x + 12, y + 10, x + 8, y + 12);
+        do Screen.drawLine(x + 12, y + 10, x + 16, y + 12);
+        // Laptop
+        do Screen.drawRectangle(x + 6, y + 12, x + 18, y + 16);
+        do Screen.drawLine(x + 6, y + 12, x + 4, y + 14);
+        do Screen.drawLine(x + 18, y + 12, x + 20, y + 14);
+        
+        // Shield if active
+        if (shield) {
+            do Screen.drawCircle(x + 12, y + 8, 20);
+        }
+        return;
+    }
+    
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x - 8, y - 12, x + 32, y + 28);
+        do Screen.setColor(true);
+        return;
+    }
+    
+    method void reset() {
+        let x = 256;
+        let y = 220;
+        let shootCooldown = 0;
+        let rapidFire = false;
+        let rapidFireTimer = 0;
+        let shield = false;
+        let shieldTimer = 0;
+        return;
+    }
+    
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

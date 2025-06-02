@@ -1,0 +1,140 @@
+class BulletManager {
+    field Array playerBullets;
+    field Array alienBullets;
+    field int playerBulletCount;
+    field int alienBulletCount;
+    field int maxBullets;
+    
+    constructor BulletManager new() {
+        let maxBullets = 20;
+        let playerBullets = Array.new(maxBullets);
+        let alienBullets = Array.new(maxBullets);
+        let playerBulletCount = 0;
+        let alienBulletCount = 0;
+        return this;
+    }
+    
+    method void addPlayerBullet(int x, int y) {
+        var int i;
+        var Bullet bullet;
+        
+        let i = 0;
+        while (i < playerBulletCount) {
+            let bullet = playerBullets[i];
+            if (~bullet.isActive()) {
+                do bullet.dispose();
+                let bullet = Bullet.new(x, y, true);
+                let playerBullets[i] = bullet;
+                return;
+            }
+            let i = i + 1;
+        }
+        
+        if (playerBulletCount < maxBullets) {
+            let bullet = Bullet.new(x, y, true);
+            let playerBullets[playerBulletCount] = bullet;
+            let playerBulletCount = playerBulletCount + 1;
+        }
+        return;
+    }
+    
+    method void addAlienBullet(int x, int y) {
+        var int i;
+        var Bullet bullet;
+        
+        let i = 0;
+        while (i < alienBulletCount) {
+            let bullet = alienBullets[i];
+            if (~bullet.isActive()) {
+                do bullet.dispose();
+                let bullet = Bullet.new(x, y, false);
+                let alienBullets[i] = bullet;
+                return;
+            }
+            let i = i + 1;
+        }
+        
+        if (alienBulletCount < maxBullets) {
+            let bullet = Bullet.new(x, y, false);
+            let alienBullets[alienBulletCount] = bullet;
+            let alienBulletCount = alienBulletCount + 1;
+        }
+        return;
+    }
+    
+    method void update() {
+        var int i;
+        var Bullet bullet;
+        
+        let i = 0;
+        while (i < playerBulletCount) {
+            let bullet = playerBullets[i];
+            do bullet.update();
+            let i = i + 1;
+        }
+        
+        let i = 0;
+        while (i < alienBulletCount) {
+            let bullet = alienBullets[i];
+            do bullet.update();
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void draw() {
+        var int i;
+        var Bullet bullet;
+        
+        let i = 0;
+        while (i < playerBulletCount) {
+            let bullet = playerBullets[i];
+            do bullet.draw();
+            let i = i + 1;
+        }
+        
+        let i = 0;
+        while (i < alienBulletCount) {
+            let bullet = alienBullets[i];
+            do bullet.draw();
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void clearAll() {
+        var int i;
+        var Bullet bullet;
+        
+        let i = 0;
+        while (i < playerBulletCount) {
+            let bullet = playerBullets[i];
+            do bullet.dispose();
+            let i = i + 1;
+        }
+        
+        let i = 0;
+        while (i < alienBulletCount) {
+            let bullet = alienBullets[i];
+            do bullet.dispose();
+            let i = i + 1;
+        }
+        
+        let playerBulletCount = 0;
+        let alienBulletCount = 0;
+        return;
+    }
+    
+    method int getPlayerBulletCount() { return playerBulletCount; }
+    method int getAlienBulletCount() { return alienBulletCount; }
+    method Bullet getPlayerBullet(int i) { return playerBullets[i]; }
+    method Bullet getAlienBullet(int i) { return alienBullets[i]; }
+    
+    method void dispose() {
+        do clearAll();
+        do playerBullets.dispose();
+        do alienBullets.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

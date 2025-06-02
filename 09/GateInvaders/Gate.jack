@@ -1,0 +1,234 @@
+class Gate {
+    field int x, y;
+    field int type; // 0=NOT, 1=AND, 2=OR, 3=XOR, 4=NAND, 5=MUX, 6=DMUX, 7=FLIP-FLOP
+    field boolean alive;
+    field int points;
+    field int animFrame;
+    field int deathMessage;
+    
+    constructor Gate new(int ax, int ay, int atype) {
+        let x = ax;
+        let y = ay;
+        let type = atype;
+        let alive = true;
+        let animFrame = 0;
+        
+        // Points based on gate complexity
+        if (type = 0) { let points = 10; }  // NOT
+        if (type = 1) { let points = 15; }  // AND
+        if (type = 2) { let points = 15; }  // OR
+        if (type = 3) { let points = 20; }  // XOR
+        if (type = 4) { let points = 25; }  // NAND
+        if (type = 5) { let points = 30; }  // MUX
+        if (type = 6) { let points = 30; }  // DMUX
+        if (type = 7) { let points = 40; }  // FLIP-FLOP
+        
+        // Set death message based on type
+        let deathMessage = Utils.random(10);
+        
+        return this;
+    }
+    
+    method void update(int frame) {
+        let animFrame = frame & 1;
+        return;
+    }
+    
+    method void move(int dx, int dy) {
+        do erase();
+        let x = x + dx;
+        let y = y + dy;
+        do draw();
+        return;
+    }
+    
+    method void draw() {
+        if (~alive) { return; }
+        
+        if (type = 0) { do drawNOT(); }
+        if (type = 1) { do drawAND(); }
+        if (type = 2) { do drawOR(); }
+        if (type = 3) { do drawXOR(); }
+        if (type = 4) { do drawNAND(); }
+        if (type = 5) { do drawMUX(); }
+        if (type = 6) { do drawDMUX(); }
+        if (type = 7) { do drawFlipFlop(); }
+        return;
+    }
+    
+    method void drawNOT() {
+        // Triangle with bubble
+        do Screen.drawLine(x, y, x, y + 20);
+        do Screen.drawLine(x, y, x + 20, y + 10);
+        do Screen.drawLine(x, y + 20, x + 20, y + 10);
+        do Screen.drawCircle(x + 24, y + 10, 3);
+        
+        // Label
+        do Output.moveCursor((y + 5) / 11, (x + 6) / 8);
+        do Output.printChar(78); // N
+        
+        // Animated bubble
+        if (animFrame = 1) {
+            do Screen.drawCircle(x + 24, y + 10, 4);
+        }
+        return;
+    }
+    
+    method void drawAND() {
+        // D-shaped gate
+        do Screen.drawLine(x, y, x, y + 20);
+        do Screen.drawLine(x, y, x + 10, y);
+        do Screen.drawLine(x, y + 20, x + 10, y + 20);
+        do Screen.drawCircle(x + 10, y + 10, 10);
+        
+        // Remove left part of circle
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x, y + 1, x + 10, y + 19);
+        do Screen.setColor(true);
+        
+        // Redraw left line
+        do Screen.drawLine(x, y, x, y + 20);
+        
+        // Label
+        do Output.moveCursor((y + 5) / 11, (x + 6) / 8);
+        do Output.printChar(65); // A
+        
+        // Animated inputs
+        if (animFrame = 1) {
+            do Screen.drawLine(x - 4, y + 5, x, y + 5);
+            do Screen.drawLine(x - 4, y + 15, x, y + 15);
+        }
+        return;
+    }
+    
+    method void drawOR() {
+        // Curved OR gate
+        do Screen.drawLine(x + 4, y, x + 20, y);
+        do Screen.drawLine(x + 4, y + 20, x + 20, y + 20);
+        do Screen.drawLine(x + 20, y, x + 28, y + 10);
+        do Screen.drawLine(x + 20, y + 20, x + 28, y + 10);
+        
+        // Curved input side
+        do Screen.drawLine(x, y + 5, x + 4, y);
+        do Screen.drawLine(x, y + 15, x + 4, y + 20);
+        
+        // Label
+        do Output.moveCursor((y + 5) / 11, (x + 10) / 8);
+        do Output.printChar(79); // O
+        
+        if (animFrame = 1) {
+            do Screen.drawPixel(x + 28, y + 10);
+            do Screen.drawPixel(x + 29, y + 10);
+        }
+        return;
+    }
+    
+    method void drawXOR() {
+        // OR gate with extra curved line
+        do drawOR();
+        do Screen.drawLine(x - 4, y + 5, x, y);
+        do Screen.drawLine(x - 4, y + 15, x, y + 20);
+        
+        // Change label to X
+        do Output.moveCursor((y + 5) / 11, (x + 10) / 8);
+        do Output.printChar(88); // X
+        return;
+    }
+    
+    method void drawNAND() {
+        // AND gate with bubble
+        do drawAND();
+        do Screen.drawCircle(x + 24, y + 10, 3);
+        
+        // Update label to NAND symbol
+        do Output.moveCursor((y + 5) / 11, (x + 6) / 8);
+        do Output.printChar(42); // *
+        return;
+    }
+    
+    method void drawMUX() {
+        // Trapezoid shape
+        do Screen.drawLine(x, y, x + 8, y);
+        do Screen.drawLine(x, y + 20, x + 8, y + 20);
+        do Screen.drawLine(x + 8, y, x + 24, y + 4);
+        do Screen.drawLine(x + 8, y + 20, x + 24, y + 16);
+        do Screen.drawLine(x + 24, y + 4, x + 24, y + 16);
+        
+        // Control line
+        do Screen.drawLine(x + 12, y + 20, x + 12, y + 24);
+        
+        // Label
+        do Output.moveCursor((y + 5) / 11, (x + 8) / 8);
+        do Output.printChar(77); // M
+        
+        if (animFrame = 1) {
+            do Screen.drawCircle(x + 12, y + 24, 2);
+        }
+        return;
+    }
+    
+    method void drawDMUX() {
+        // Reverse trapezoid
+        do Screen.drawLine(x, y + 4, x, y + 16);
+        do Screen.drawLine(x, y + 4, x + 16, y);
+        do Screen.drawLine(x, y + 16, x + 16, y + 20);
+        do Screen.drawLine(x + 16, y, x + 24, y);
+        do Screen.drawLine(x + 16, y + 20, x + 24, y + 20);
+        
+        // Control line
+        do Screen.drawLine(x + 8, y + 20, x + 8, y + 24);
+        
+        // Label
+        do Output.moveCursor((y + 5) / 11, (x + 3) / 8);
+        do Output.printChar(68); // D
+        
+        if (animFrame = 1) {
+            do Screen.drawPixel(x + 24, y);
+            do Screen.drawPixel(x + 24, y + 20);
+        }
+        return;
+    }
+    
+    method void drawFlipFlop() {
+        // Rectangle with clock input
+        do Screen.drawRectangle(x, y, x + 24, y + 20);
+        
+        // Clock triangle
+        do Screen.drawLine(x, y + 16, x + 4, y + 18);
+        do Screen.drawLine(x, y + 16, x + 4, y + 14);
+        
+        // Label
+        do Output.moveCursor((y + 5) / 11, (x + 8) / 8);
+        do Output.printString("FF");
+        
+        // Animated state indicator
+        if (animFrame = 1) {
+            do Screen.drawCircle(x + 20, y + 4, 2);
+        }
+        return;
+    }
+    
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawRectangle(x - 5, y - 2, x + 32, y + 26);
+        do Screen.setColor(true);
+        return;
+    }
+    
+    method void destroy() {
+        do erase();
+        let alive = false;
+        return;
+    }
+    
+    method boolean isAlive() { return alive; }
+    method int getX() { return x; }
+    method int getY() { return y; }
+    method int getPoints() { return points; }
+    method int getDeathMessage() { return deathMessage; }
+    
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

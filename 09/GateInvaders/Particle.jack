@@ -1,0 +1,81 @@
+class Particle {
+    field int x, y;
+    field int vx, vy;
+    field int life;
+    field boolean active;
+    field boolean isBinary;
+
+    constructor Particle new() {
+        let active = false;
+        let isBinary = Utils.random(2) = 1;
+        return this;
+    }
+
+    method void spawn(int ax, int ay, int avx, int avy) {
+        let x = ax;
+        let y = ay;
+        let vx = avx;
+        let vy = avy;
+        let life = 16;
+        let active = true;
+        return;
+    }
+
+    method void update() {
+        if (~active) { return; }
+
+        do erase();
+
+        let x = x + vx;
+        let y = y + vy;
+        let vy = vy + 1;
+        let life = life - 1;
+
+        // Off‑screen (beyond drawable text grid) or life over
+        if ((life < 1) | (y < 0) | (y > 252) | (x < 0) | (x > 511)) {
+            let active = false;
+            return;
+        }
+
+        do draw();
+        return;
+    }
+
+    method void draw() {
+        if (~active) { return; }
+        if ((y < 0) | (y > 252) | (x < 0) | (x > 511)) { return; } // off‑screen
+
+        if (life > 8) {
+            do Output.moveCursor(y / 11, x / 8);
+            if (isBinary) {
+                do Output.printChar(49); // '1'
+            } else {
+                do Output.printChar(48); // '0'
+            }
+        } else {
+            do Screen.drawPixel(x, y);
+        }
+        return;
+    }
+
+    method void erase() {
+        if ((y < 0) | (y > 252) | (x < 0) | (x > 511)) { return; } // off‑screen
+
+        if (life > 8) {
+            do Output.moveCursor(y / 11, x / 8);
+            do Output.printChar(32);
+        } else {
+            do Screen.setColor(false);
+            do Screen.drawPixel(x, y);
+            do Screen.setColor(true);
+        }
+        return;
+    }
+
+    method boolean isActive() { return active; }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

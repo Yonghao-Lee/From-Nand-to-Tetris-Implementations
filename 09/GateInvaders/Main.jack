@@ -1,0 +1,12 @@
+class Main {
+    function void main() {
+        var GateInvaders game;
+        
+        do Utils.init();
+        let game = GateInvaders.new();
+        do game.run();
+        do game.dispose();
+        
+        return;
+    }
+}

@@ -1,112 +1,264 @@
-"""
-This file is part of nand2tetris, as taught in The Hebrew University, and
-was written by Aviv Yaish. It is an extension to the specifications given
-[here](https://www.nand2tetris.org) (Shimon Schocken and Noam Nisan, 2017),
-as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
-Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
-"""
-import typing
+from JackTokenizer import JackTokenizer
+
+# Jack operators
+OPS       = {"+", "-", "*", "/", "&", "|", "<", ">", "="}
+UNARY_OPS = {"-", "~"}
 
 
 class CompilationEngine:
-    """Gets input from a JackTokenizer and emits its parsed structure into an
-    output stream.
-    """
+    def __init__(self, tokenizer: JackTokenizer, output_stream) -> None:
+        self.tk   = tokenizer
+        self.out  = output_stream
+        self.ind  = 0
+        if self.tk.has_more_tokens():
+            self.tk.advance()
 
-    def __init__(self, input_stream: "JackTokenizer", output_stream) -> None:
-        """
-        Creates a new compilation engine with the given input and output. The
-        next routine called must be compileClass()
-        :param input_stream: The input stream.
-        :param output_stream: The output stream.
-        """
-        # Your code goes here!
-        # Note that you can write to output_stream like so:
-        # output_stream.write("Hello world! \n")
-        pass
+    def _w(self, text: str = "") -> None:
+        self.out.write("  " * self.ind + text + "\n")
+
+    def _esc(self, s: str) -> str:
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+    def _write_token(self) -> None:
+        ttype = self.tk.token_type()
+        raw   = self.tk.current_token()
+
+        if ttype == "INT_CONST":
+            tag = "integerConstant"
+        elif ttype == "STRING_CONST":
+            tag = "stringConstant"
+            raw = raw[1:-1]            # drop quotes
+        else:
+            tag = ttype.lower()
+
+        txt = self._esc(raw)
+        self._w(f"<{tag}> {txt} </{tag}>")
+        if self.tk.has_more_tokens():
+            self.tk.advance()
+
+    def _expect(self, lexeme: str) -> None:
+        assert self.tk.current_token() == lexeme, f"Expected '{lexeme}'"
+        self._write_token()
 
     def compile_class(self) -> None:
-        """Compiles a complete class."""
-        # Your code goes here!
-        pass
+        self._w("<class>")
+        self.ind += 1
+        self._expect("class")
+        self._write_token()                    # className
+        self._expect("{")
+
+        while self.tk.token_type() == "KEYWORD" and self.tk.keyword() in {"static", "field"}:
+            self.compile_class_var_dec()
+        while self.tk.token_type() == "KEYWORD" and self.tk.keyword() in {"constructor", "function", "method"}:
+            self.compile_subroutine_dec()
+
+        self._expect("}")
+        self.ind -= 1
+        self._w("</class>")
 
     def compile_class_var_dec(self) -> None:
-        """Compiles a static declaration or a field declaration."""
-        # Your code goes here!
-        pass
+        self._w("<classVarDec>")
+        self.ind += 1
+        self._write_token()          # static|field
+        self._write_token()          # type
+        self._write_token()          # varName
+        while self.tk.current_token() == ",":
+            self._write_token()
+            self._write_token()
+        self._expect(";")
+        self.ind -= 1
+        self._w("</classVarDec>")
 
-    def compile_subroutine(self) -> None:
-        """
-        Compiles a complete method, function, or constructor.
-        You can assume that classes with constructors have at least one field,
-        you will understand why this is necessary in project 11.
-        """
-        # Your code goes here!
-        pass
+    def compile_subroutine_dec(self) -> None:
+        self._w("<subroutineDec>")
+        self.ind += 1
+        self._write_token()          # constructor|function|method
+        self._write_token()          # returnType
+        self._write_token()          # subroutineName
+        self._expect("(")
+        self.compile_parameter_list()
+        self._expect(")")
+        self.compile_subroutine_body()
+        self.ind -= 1
+        self._w("</subroutineDec>")
 
     def compile_parameter_list(self) -> None:
-        """Compiles a (possibly empty) parameter list, not including the 
-        enclosing "()".
-        """
-        # Your code goes here!
-        pass
+        self._w("<parameterList>")
+        self.ind += 1
+        if not (self.tk.token_type() == "SYMBOL" and self.tk.current_token() == ")"):
+            self._write_token()
+            self._write_token()
+            while self.tk.current_token() == ",":
+                self._write_token()
+                self._write_token()
+                self._write_token()
+        self.ind -= 1
+        self._w("</parameterList>")
+
+    def compile_subroutine_body(self) -> None:
+        self._w("<subroutineBody>")
+        self.ind += 1
+        self._expect("{")
+        while self.tk.token_type() == "KEYWORD" and self.tk.keyword() == "var":
+            self.compile_var_dec()
+        self.compile_statements()
+        self._expect("}")
+        self.ind -= 1
+        self._w("</subroutineBody>")
 
     def compile_var_dec(self) -> None:
-        """Compiles a var declaration."""
-        # Your code goes here!
-        pass
+        self._w("<varDec>")
+        self.ind += 1
+        self._write_token()          # 'var'
+        self._write_token()          # type
+        self._write_token()          # varName
+        while self.tk.current_token() == ",":
+            self._write_token()
+            self._write_token()
+        self._expect(";")
+        self.ind -= 1
+        self._w("</varDec>")
 
     def compile_statements(self) -> None:
-        """Compiles a sequence of statements, not including the enclosing 
-        "{}".
-        """
-        # Your code goes here!
-        pass
-
-    def compile_do(self) -> None:
-        """Compiles a do statement."""
-        # Your code goes here!
-        pass
+        self._w("<statements>")
+        self.ind += 1
+        while self.tk.token_type() == "KEYWORD" and self.tk.keyword() in {"let", "if", "while", "do", "return"}:
+            kw = self.tk.keyword()
+            if   kw == "let":    self.compile_let()
+            elif kw == "if":     self.compile_if()
+            elif kw == "while":  self.compile_while()
+            elif kw == "do":     self.compile_do()
+            elif kw == "return": self.compile_return()
+        self.ind -= 1
+        self._w("</statements>")
 
     def compile_let(self) -> None:
-        """Compiles a let statement."""
-        # Your code goes here!
-        pass
-
-    def compile_while(self) -> None:
-        """Compiles a while statement."""
-        # Your code goes here!
-        pass
-
-    def compile_return(self) -> None:
-        """Compiles a return statement."""
-        # Your code goes here!
-        pass
+        self._w("<letStatement>")
+        self.ind += 1
+        self._write_token()              # 'let'
+        self._write_token()              # varName
+        if self.tk.current_token() == "[":
+            self._write_token()
+            self.compile_expression()
+            self._expect("]")
+        self._expect("=")
+        self.compile_expression()
+        self._expect(";")
+        self.ind -= 1
+        self._w("</letStatement>")
 
     def compile_if(self) -> None:
-        """Compiles a if statement, possibly with a trailing else clause."""
-        # Your code goes here!
-        pass
+        self._w("<ifStatement>")
+        self.ind += 1
+        self._write_token()
+        self._expect("(")
+        self.compile_expression()
+        self._expect(")")
+        self._expect("{")
+        self.compile_statements()
+        self._expect("}")
+        if self.tk.token_type() == "KEYWORD" and self.tk.keyword() == "else":
+            self._write_token()
+            self._expect("{")
+            self.compile_statements()
+            self._expect("}")
+        self.ind -= 1
+        self._w("</ifStatement>")
+
+    def compile_while(self) -> None:
+        self._w("<whileStatement>")
+        self.ind += 1
+        self._write_token()
+        self._expect("(")
+        self.compile_expression()
+        self._expect(")")
+        self._expect("{")
+        self.compile_statements()
+        self._expect("}")
+        self.ind -= 1
+        self._w("</whileStatement>")
+
+    def compile_do(self) -> None:
+        self._w("<doStatement>")
+        self.ind += 1
+        self._write_token()
+        self.compile_subroutine_call()
+        self._expect(";")
+        self.ind -= 1
+        self._w("</doStatement>")
+
+    def compile_return(self) -> None:
+        self._w("<returnStatement>")
+        self.ind += 1
+        self._write_token()
+        if not (self.tk.token_type() == "SYMBOL" and self.tk.current_token() == ";"):
+            self.compile_expression()
+        self._expect(";")
+        self.ind -= 1
+        self._w("</returnStatement>")
 
     def compile_expression(self) -> None:
-        """Compiles an expression."""
-        # Your code goes here!
-        pass
+        self._w("<expression>")
+        self.ind += 1
+        self.compile_term()
+        while self.tk.token_type() == "SYMBOL" and self.tk.current_token() in OPS:
+            self._write_token()
+            self.compile_term()
+        self.ind -= 1
+        self._w("</expression>")
 
     def compile_term(self) -> None:
-        """Compiles a term. 
-        This routine is faced with a slight difficulty when
-        trying to decide between some of the alternative parsing rules.
-        Specifically, if the current token is an identifier, the routing must
-        distinguish between a variable, an array entry, and a subroutine call.
-        A single look-ahead token, which may be one of "[", "(", or "." suffices
-        to distinguish between the three possibilities. Any other token is not
-        part of this term and should not be advanced over.
-        """
-        # Your code goes here!
-        pass
+        self._w("<term>")
+        self.ind += 1
+        ttype = self.tk.token_type()
+        token = self.tk.current_token()
+
+        if ttype in {"INT_CONST", "STRING_CONST"}:
+            self._write_token()
+        elif ttype == "KEYWORD" and token in {"true", "false", "null", "this"}:
+            self._write_token()
+        elif ttype == "IDENTIFIER":
+            nxt = (self.tk.tokens[self.tk.current_token_index + 1]
+                   if self.tk.current_token_index + 1 < len(self.tk.tokens) else None)
+
+            if nxt == "[":
+                self._write_token()
+                self._expect("[")
+                self.compile_expression()
+                self._expect("]")
+            elif nxt in {"(", "."}:
+                self.compile_subroutine_call()  # consumes ')' as well
+            else:
+                self._write_token()
+        elif ttype == "SYMBOL" and token == "(":
+            self._write_token()
+            self.compile_expression()
+            self._expect(")")
+        elif ttype == "SYMBOL" and token in UNARY_OPS:
+            self._write_token()
+            self.compile_term()
+        else:
+            raise ValueError(f"Bad term starting with '{token}'")
+
+        self.ind -= 1
+        self._w("</term>")
+
+    def compile_subroutine_call(self) -> None:
+        self._write_token()                    # identifier or className/varName
+        if self.tk.current_token() == ".":
+            self._write_token()                # '.'
+            self._write_token()                # subroutineName
+        self._expect("(")
+        self.compile_expression_list()
+        self._expect(")")
 
     def compile_expression_list(self) -> None:
-        """Compiles a (possibly empty) comma-separated list of expressions."""
-        # Your code goes here!
-        pass
+        self._w("<expressionList>")
+        self.ind += 1
+        if not (self.tk.token_type() == "SYMBOL" and self.tk.current_token() == ")"):
+            self.compile_expression()
+            while self.tk.current_token() == ",":
+                self._write_token()
+                self.compile_expression()
+        self.ind -= 1
+        self._w("</expressionList>")

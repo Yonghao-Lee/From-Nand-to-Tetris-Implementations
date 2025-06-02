@@ -1,0 +1,93 @@
+class PowerUp {
+    field int x, y;
+    field int type; // 0=clock, 1=carry bit, 2=enable signal
+    field int fallSpeed;
+    field boolean active;
+    field int animFrame;
+    
+    constructor PowerUp new() {
+        let active = false;
+        let fallSpeed = 2;
+        let animFrame = 0;
+        return this;
+    }
+    
+    method void spawn(int ax, int ay) {
+        let x = ax;
+        let y = ay;
+        let type = Utils.random(3);
+        let active = true;
+        let animFrame = 0;
+        return;
+    }
+    
+    method void update() {
+        if (~active) { return; }
+        
+        do erase();
+        let y = y + fallSpeed;
+        let animFrame = animFrame + 1;
+        
+        if (y > 240) {
+            let active = false;
+            return;
+        }
+        
+        do draw();
+        return;
+    }
+    
+    method void draw() {
+        if (~active) { return; }
+        
+        if ((animFrame & 4) = 0) {
+            do Screen.drawCircle(x, y, 10);
+        } else {
+            do Screen.drawCircle(x, y, 8);
+        }
+        
+        do Screen.setColor(false);
+        if (type = 0) { // Clock signal
+            do Screen.drawLine(x - 4, y, x, y);
+            do Screen.drawLine(x, y, x, y - 4);
+            do Screen.drawLine(x, y - 4, x + 4, y - 4);
+            do Screen.drawLine(x + 4, y - 4, x + 4, y);
+            do Screen.drawLine(x + 4, y, x + 8, y);
+        }
+        if (type = 1) { // Carry bit
+            do Output.moveCursor((y - 3) / 11, (x - 3) / 8);
+            do Output.printChar(67); // 'C'
+        }
+        if (type = 2) { // Enable signal
+            do Output.moveCursor((y - 3) / 11, (x - 3) / 8);
+            do Output.printChar(69); // 'E'
+        }
+        do Screen.setColor(true);
+        return;
+    }
+    
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.drawCircle(x, y, 11);
+        do Screen.setColor(true);
+        return;
+    }
+    
+    method boolean collidesWith(int tx, int ty, int tw, int th) {
+        return (x > tx) & (x < (tx + tw)) & (y > ty) & (y < (ty + th));
+    }
+    
+    method void collect() {
+        do erase();
+        let active = false;
+        return;
+    }
+    
+    method boolean isActive() { return active; }
+    method int getType() { return type; }
+    
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+}

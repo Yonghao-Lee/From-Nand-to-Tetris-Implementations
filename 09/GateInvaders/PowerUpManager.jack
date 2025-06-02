@@ -1,0 +1,119 @@
+class PowerUpManager {
+    field Array powerUps;
+    field int count;
+    field int maxPowerUps;
+    
+    constructor PowerUpManager new() {
+        var int i;
+        var PowerUp p;
+        
+        let maxPowerUps = 5;
+        let count = 0;  // This should be 0, not maxPowerUps
+        let powerUps = Array.new(maxPowerUps);
+        
+        // Initialize with null power-ups
+        let i = 0;
+        while (i < maxPowerUps) {
+            let powerUps[i] = null;
+            let i = i + 1;
+        }
+        return this;
+    }
+    
+    method void spawn(int x, int y) {
+        var int i;
+        var PowerUp p;
+        
+        // Check if we can reuse an inactive slot
+        let i = 0;
+        while (i < count) {
+            let p = powerUps[i];
+            if ((~(p = null)) & (~p.isActive())) {
+                do p.spawn(x, y);
+                return;
+            }
+            let i = i + 1;
+        }
+        
+        // Create new power-up if space available
+        if (count < maxPowerUps) {
+            let p = PowerUp.new();
+            do p.spawn(x, y);
+            let powerUps[count] = p;
+            let count = count + 1;
+        }
+        return;
+    }
+    
+    method void update() {
+        var int i;
+        var PowerUp p;
+        
+        let i = 0;
+        while (i < count) {
+            let p = powerUps[i];
+            if (~(p = null)) {
+                do p.update();
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void draw() {
+        var int i;
+        var PowerUp p;
+        
+        let i = 0;
+        while (i < count) {
+            let p = powerUps[i];
+            if (~(p = null)) {
+                do p.draw();
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void clearAll() {
+        var int i;
+        var PowerUp p;
+        
+        let i = 0;
+        while (i < count) {
+            let p = powerUps[i];
+            if (~(p = null)) {
+                if (p.isActive()) {
+                    do p.erase();
+                }
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method int getCount() { return count; }
+    method PowerUp getPowerUp(int i) { 
+        if (i < count) {
+            return powerUps[i];
+        }
+        return null;
+    }
+    
+    method void dispose() {
+        var int i;
+        var PowerUp p;
+        
+        let i = 0;
+        while (i < count) {
+            let p = powerUps[i];
+            if (~(p = null)) {
+                do p.dispose();
+            }
+            let i = i + 1;
+        }
+        do powerUps.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

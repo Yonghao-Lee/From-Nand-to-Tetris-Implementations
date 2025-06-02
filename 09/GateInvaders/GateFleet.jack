@@ -1,0 +1,304 @@
+class GateFleet {
+    field Array gates;
+    field int count;
+    field int direction;
+    field int moveTimer;
+    field int moveSpeed;
+    
+    constructor GateFleet new() {
+        let gates = Array.new(40);
+        let count = 0;
+        let direction = 1;
+        let moveTimer = 0;
+        let moveSpeed = 30;
+        do reset(1);
+        return this;
+    }
+    
+    method void reset(int level) {
+        var int i, j, type, gatesPerRow;
+        var Gate gate;
+        
+        // Clear existing gates
+        let i = 0;
+        while (i < count) {
+            let gate = gates[i];
+            do gate.dispose();
+            let i = i + 1;
+        }
+        
+        let count = 0;
+        let direction = 1;
+        let moveSpeed = Math.max(10, 35 - (level * 5));
+        
+        // Create gate formation based on level
+        if (level = 1) {
+            // Level 1: Basic gates (NOT, AND, OR)
+            let j = 0;
+            while (j < 3) {
+                let i = 0;
+                let gatesPerRow = 8;
+                while (i < gatesPerRow) {
+                    let type = j; // NOT=0, AND=1, OR=2
+                    let gate = Gate.new(120 + (i * 35), 30 + (j * 30), type);
+                    let gates[count] = gate;
+                    let count = count + 1;
+                    let i = i + 1;
+                }
+                let j = j + 1;
+            }
+        }
+        
+        if (level = 2) {
+            // Level 2: Add XOR and NAND
+            let j = 0;
+            while (j < 4) {
+                let i = 0;
+                let gatesPerRow = 7;
+                while (i < gatesPerRow) {
+                    if (j = 0) { let type = 3; } // XOR
+                    if (j = 1) { let type = 4; } // NAND
+                    if (j = 2) { let type = 1; } // AND
+                    if (j = 3) { let type = 2; } // OR
+                    let gate = Gate.new(140 + (i * 35), 30 + (j * 30), type);
+                    let gates[count] = gate;
+                    let count = count + 1;
+                    let i = i + 1;
+                }
+                let j = j + 1;
+            }
+        }
+        
+        if (level = 3) {
+            // Level 3: MUX and DMUX appear
+            let j = 0;
+            while (j < 4) {
+                let i = 0;
+                let gatesPerRow = 6;
+                while (i < gatesPerRow) {
+                    if (j = 0) { let type = 5; } // MUX
+                    if (j = 1) { let type = 6; } // DMUX
+                    if (j = 2) { let type = 4; } // NAND
+                    if (j = 3) { let type = 3; } // XOR
+                    let gate = Gate.new(160 + (i * 35), 30 + (j * 30), type);
+                    let gates[count] = gate;
+                    let count = count + 1;
+                    let i = i + 1;
+                }
+                let j = j + 1;
+            }
+        }
+        
+        if (level = 4) {
+            // Level 4: Flip-flops join the battle
+            let j = 0;
+            while (j < 4) {
+                let i = 0;
+                let gatesPerRow = 6;
+                while (i < gatesPerRow) {
+                    if (j = 0) { let type = 7; } // FLIP-FLOP
+                    if (j = 1) { let type = 5; } // MUX
+                    if (j = 2) { let type = 6; } // DMUX
+                    if (j = 3) { let type = 4; } // NAND
+                    let gate = Gate.new(160 + (i * 35), 30 + (j * 30), type);
+                    let gates[count] = gate;
+                    let count = count + 1;
+                    let i = i + 1;
+                }
+                let j = j + 1;
+            }
+        }
+        
+        if (level > 4) {
+            // Level 5+: All gate types, faster
+            let j = 0;
+            while (j < 5) {
+                let i = 0;
+                let gatesPerRow = 5;
+                while (i < gatesPerRow) {
+                    let type = Utils.random(8); // Random gate type
+                    let gate = Gate.new(180 + (i * 35), 20 + (j * 30), type);
+                    let gates[count] = gate;
+                    let count = count + 1;
+                    let i = i + 1;
+                }
+                let j = j + 1;
+            }
+        }
+        
+        return;
+    }
+    
+    method void update(int frame) {
+        var int i;
+        var Gate gate;
+        var boolean shouldDrop;
+        
+        let moveTimer = moveTimer + 1;
+        
+        if (moveTimer > moveSpeed) {
+            let moveTimer = 0;
+            let shouldDrop = false;
+            
+            // Check if we need to change direction
+            let i = 0;
+            while (i < count) {
+                let gate = gates[i];
+                if (gate.isAlive()) {
+                    if (((gate.getX() < 17) & (direction = -1)) | 
+                        ((gate.getX() > 467) & (direction = 1))) {
+                        let shouldDrop = true;
+                    }
+                }
+                let i = i + 1;
+            }
+            
+            // Move all gates
+            if (shouldDrop) {
+                let direction = -direction;
+                let i = 0;
+                while (i < count) {
+                    let gate = gates[i];
+                    if (gate.isAlive()) {
+                        do gate.move(0, 20);
+                    }
+                    let i = i + 1;
+                }
+            } else {
+                let i = 0;
+                while (i < count) {
+                    let gate = gates[i];
+                    if (gate.isAlive()) {
+                        do gate.move(direction * 12, 0);
+                    }
+                    let i = i + 1;
+                }
+            }
+        }
+        
+        // Update animation
+        let i = 0;
+        while (i < count) {
+            let gate = gates[i];
+            if (gate.isAlive()) {
+                do gate.update(frame);
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void draw() {
+        var int i;
+        var Gate gate;
+        
+        let i = 0;
+        while (i < count) {
+            let gate = gates[i];
+            if (gate.isAlive()) {
+                do gate.draw();
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void shootBullet(BulletManager bullets) {
+        var int i, shooterCount, shooter;
+        var Array shooters;
+        var Gate gate;
+        
+        let shooters = Array.new(count);
+        let shooterCount = 0;
+        
+        // Find gates that can shoot (bottom row)
+        let i = 0;
+        while (i < count) {
+            let gate = gates[i];
+            if (gate.isAlive() & isBottomGate(i)) {
+                let shooters[shooterCount] = i;
+                let shooterCount = shooterCount + 1;
+            }
+            let i = i + 1;
+        }
+        
+        // Pick random shooter
+        if (shooterCount > 0) {
+            let shooter = shooters[Utils.random(shooterCount)];
+            let gate = gates[shooter];
+            do bullets.addAlienBullet(gate.getX() + 16, gate.getY() + 24);
+        }
+        
+        do shooters.dispose();
+        return;
+    }
+    
+    method boolean isBottomGate(int index) {
+        var int i, x, y;
+        var Gate gate, other;
+        
+        let gate = gates[index];
+        let x = gate.getX();
+        let y = gate.getY();
+        
+        // Check if any gate is below this one
+        let i = 0;
+        while (i < count) {
+            let other = gates[i];
+            if (other.isAlive() & (Math.abs(other.getX() - x) < 30) & (other.getY() > y)) {
+                return false;
+            }
+            let i = i + 1;
+        }
+        return true;
+    }
+    
+    method boolean isEmpty() {
+        var int i;
+        var Gate gate;
+        
+        let i = 0;
+        while (i < count) {
+            let gate = gates[i];
+            if (gate.isAlive()) {
+                return false;
+            }
+            let i = i + 1;
+        }
+        return true;
+    }
+    
+    method int getLowestY() {
+        var int i, maxY;
+        var Gate gate;
+        
+        let maxY = 0;
+        let i = 0;
+        while (i < count) {
+            let gate = gates[i];
+            if (gate.isAlive() & (gate.getY() > maxY)) {
+                let maxY = gate.getY();
+            }
+            let i = i + 1;
+        }
+        return maxY;
+    }
+    
+    method int getCount() { return count; }
+    method Gate getGate(int i) { return gates[i]; }
+    
+    method void dispose() {
+        var int i;
+        var Gate gate;
+        
+        let i = 0;
+        while (i < count) {
+            let gate = gates[i];
+            do gate.dispose();
+            let i = i + 1;
+        }
+        do gates.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

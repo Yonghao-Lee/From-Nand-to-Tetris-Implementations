@@ -1,0 +1,358 @@
+class GateInvaders {
+    field Player player;
+    field GateFleet gates;
+    field BulletManager bullets;
+    field ParticleSystem particles;
+    field PowerUpManager powerUps;
+    field UI ui;
+    field int score;
+    field int lives;
+    field int level;
+    field int gameState; // 0=menu, 1=playing, 2=game over, 3=win
+    field int frameCount;
+    field Array keys; // Change this line - remove boolean and [5]
+    field Array funnyMessages;
+    field int messageTimer;
+    field int currentMessage;
+    
+    constructor GateInvaders new() {
+        let player = Player.new();
+        let gates = GateFleet.new();
+        let bullets = BulletManager.new();
+        let particles = ParticleSystem.new();
+        let powerUps = PowerUpManager.new();
+        let ui = UI.new();
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let gameState = 0;
+        let frameCount = 0;
+        let messageTimer = 0;
+        let currentMessage = -1;
+        let keys = Array.new(5);
+        do resetKeys();
+        do initFunnyMessages();
+        return this;
+    }
+    
+    method void initFunnyMessages() {
+        let funnyMessages = Array.new(10);
+        let funnyMessages[0] = "NAND is all you need!";
+        let funnyMessages[1] = "Those gates are acting XOR-bitant!";
+        let funnyMessages[2] = "Don't be so negative, use NOT!";
+        let funnyMessages[3] = "This is getting out of NAND!";
+        let funnyMessages[4] = "You're really FLIPping out!";
+        let funnyMessages[5] = "MUXt we fight like this?";
+        let funnyMessages[6] = "I'm having a logical breakdown!";
+        let funnyMessages[7] = "Gate out of here!";
+        let funnyMessages[8] = "You've been DE-MUXed!";
+        let funnyMessages[9] = "That's some solid state logic!";
+        return;
+    }
+    
+    method void run() {
+        var char key;
+        var boolean running;
+        let running = true;
+        
+        do ui.drawTitleScreen();
+        
+        while (running) {
+            let key = Keyboard.keyPressed();
+            do handleInput(key);
+            
+            if (gameState = 1) {
+                do update();
+                do render();
+                do Sys.wait(30);
+            }
+            
+            if (gameState = 0) {
+                if (keys[2]) {
+                    do startGame();
+                }
+            }
+            
+            if ((gameState = 2) | (gameState = 3)) {
+                if (keys[2]) {
+                    do resetGame();
+                    let gameState = 0;
+                    do ui.drawTitleScreen();
+                }
+            }
+            
+            if (keys[4]) {
+                let running = false;
+            }
+            
+            let frameCount = frameCount + 1;
+        }
+        
+        do dispose();
+        return;
+    }
+    
+    method void handleInput(char key) {
+        do resetKeys();
+        
+        if (key = 130) { let keys[0] = true; }
+        if (key = 132) { let keys[1] = true; }
+        if (key = 32)  { let keys[2] = true; }
+        if (key = 80)  { let keys[3] = true; }
+        if (key = 81)  { let keys[4] = true; }
+        return;
+    }
+    
+    method void resetKeys() {
+        var int i;
+        let i = 0;
+        while (i < 5) {
+            let keys[i] = false;
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void startGame() {
+        let gameState = 1;
+        do Screen.clearScreen();
+        do ui.drawGameBorder();
+        do ui.updateScore(score);
+        do ui.updateLives(lives);
+        do ui.updateLevel(level);
+        do showMessage(0); // "NAND is all you need!"
+        return;
+    }
+    
+    method void showMessage(int msgIndex) {
+        let currentMessage = msgIndex;
+        let messageTimer = 60; // Show for 2 seconds
+        return;
+    }
+    
+    method void update() {
+        var int gateBulletChance;
+        
+        // Update player
+        if (keys[0]) { do player.moveLeft(); }
+        if (keys[1]) { do player.moveRight(); }
+        if (keys[2] & player.canShoot()) { 
+            do bullets.addPlayerBullet(player.getX() + 12, player.getY());
+            do player.resetShootCooldown();
+        }
+        
+        // Update all game objects
+        do player.update();
+        do gates.update(frameCount);
+        do bullets.update();
+        do particles.update();
+        do powerUps.update();
+        
+        // Update message timer
+        if (messageTimer > 0) {
+            let messageTimer = messageTimer - 1;
+        }
+        
+        // Gate shooting with funny twist
+        let gateBulletChance = 200 - (level * 20);
+        if (gateBulletChance < 50) { let gateBulletChance = 50; }
+        
+        if (Utils.random(gateBulletChance) = 1) {
+            do gates.shootBullet(bullets);
+            // Sometimes gates shout when shooting
+            if (Utils.random(3) = 1) {
+                do showMessage(Utils.random(10));
+            }
+        }
+        
+        // Check collisions
+        do checkCollisions();
+        
+        // Check win condition
+        if (gates.isEmpty()) {
+            if (level = 5) {
+                do victory();
+            } else {
+                do nextLevel();
+            }
+        }
+        
+        // Update UI
+        do ui.updateScore(score);
+        
+        // Display current message
+        if (messageTimer > 0) {
+            do ui.displayMessage(funnyMessages[currentMessage]);
+        }
+        
+        return;
+    }
+    
+    method void checkCollisions() {
+        var int i, j;
+        var Bullet bullet;
+        var Gate gate;
+        var PowerUp powerUp;
+        var boolean hit;
+        
+        // Player bullets vs gates
+        let i = 0;
+        while (i < bullets.getPlayerBulletCount()) {
+            let bullet = bullets.getPlayerBullet(i);
+            if (bullet.isActive()) {
+                let j = 0;
+                let hit = false;
+                while ((j < gates.getCount()) & (~hit)) {
+                    let gate = gates.getGate(j);
+                    if (gate.isAlive() & bullet.collidesWith(gate.getX(), gate.getY(), 32, 24)) {
+                        do gate.destroy();
+                        do bullet.deactivate();
+                        do particles.createExplosion(gate.getX() + 16, gate.getY() + 12);
+                        let score = score + gate.getPoints();
+                        let hit = true;
+                        
+                        // Show gate's "death" message
+                        do showMessage(gate.getDeathMessage());
+                        
+                        // Chance to spawn power-up
+                        if (Utils.random(8) = 1) {
+                            do powerUps.spawn(gate.getX() + 16, gate.getY());
+                        }
+                    }
+                    let j = j + 1;
+                }
+            }
+            let i = i + 1;
+        }
+        
+        // Gate bullets vs player
+        let i = 0;
+        while (i < bullets.getAlienBulletCount()) {
+            let bullet = bullets.getAlienBullet(i);
+            if (bullet.isActive()) {
+                if (bullet.collidesWith(player.getX(), player.getY(), 24, 16)) {
+                    do bullet.deactivate();
+                    do particles.createExplosion(player.getX() + 12, player.getY() + 8);
+                    do playerHit();
+                }
+            }
+            let i = i + 1;
+        }
+        
+        // Power-ups vs player
+        let i = 0;
+        while (i < powerUps.getCount()) {
+            let powerUp = powerUps.getPowerUp(i);
+            if (powerUp.isActive()) {
+                if (powerUp.collidesWith(player.getX(), player.getY(), 24, 16)) {
+                    do powerUp.collect();
+                    do applyPowerUp(powerUp.getType());
+                }
+            }
+            let i = i + 1;
+        }
+        
+        // Check if gates reached player
+        if (gates.getLowestY() > 200) {
+            do showMessage(7); // "Gate out of here!"
+            do gameOver();
+        }
+        
+        return;
+    }
+    
+    method void applyPowerUp(int type) {
+        if (type = 0) { // Clock signal - extra life
+            let lives = lives + 1;
+            do ui.updateLives(lives);
+            do showMessage(9); // "That's some solid state logic!"
+        }
+        if (type = 1) { // Carry bit - rapid fire
+            do player.activateRapidFire();
+            do showMessage(4); // "You're really FLIPping out!"
+        }
+        if (type = 2) { // Enable signal - shield
+            do player.activateShield();
+            do showMessage(6); // "I'm having a logical breakdown!"
+        }
+        return;
+    }
+    
+    method void playerHit() {
+        if (~player.hasShield()) {
+            let lives = lives - 1;
+            do ui.updateLives(lives);
+            if (lives = 0) {
+                do gameOver();
+            } else {
+                do showMessage(2); // "Don't be so negative, use NOT!"
+            }
+        } else {
+            do player.deactivateShield();
+        }
+        return;
+    }
+    
+    method void nextLevel() {
+        let level = level + 1;
+        do ui.updateLevel(level);
+        do gates.reset(level);
+        do bullets.clearAll();
+        do powerUps.clearAll();
+        
+        if (level = 2) { do showMessage(1); } // "Those gates are acting XOR-bitant!"
+        if (level = 3) { do showMessage(3); } // "This is getting out of NAND!"
+        if (level = 4) { do showMessage(5); } // "MUXt we fight like this?"
+        if (level = 5) { do showMessage(8); } // "You've been DE-MUXed!"
+        
+        return;
+    }
+    
+    method void gameOver() {
+        let gameState = 2;
+        do ui.drawGameOver(score);
+        return;
+    }
+    
+    method void victory() {
+        let gameState = 3;
+        do ui.drawVictory(score);
+        return;
+    }
+    
+    method void resetGame() {
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let frameCount = 0;
+        let messageTimer = 0;
+        do gates.reset(1);
+        do bullets.clearAll();
+        do particles.clearAll();
+        do powerUps.clearAll();
+        do player.reset();
+        return;
+    }
+    
+    method void render() {
+        do player.draw();
+        do gates.draw();
+        do bullets.draw();
+        do particles.draw();
+        do powerUps.draw();
+        return;
+    }
+    
+    method void dispose() {
+        do player.dispose();
+        do gates.dispose();
+        do bullets.dispose();
+        do particles.dispose();
+        do powerUps.dispose();
+        do ui.dispose();
+        do keys.dispose();
+        do funnyMessages.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

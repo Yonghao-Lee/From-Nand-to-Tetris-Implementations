@@ -1,0 +1,54 @@
+class Utils {
+    static int seed;
+    
+    function void init() {
+        let seed = 1;
+        return;
+    }
+    
+    function int random(int range) {
+        let seed = (seed * 31421) + 6927;
+        if (seed < 0) {
+            let seed = -seed;
+        }
+        return seed - ((seed / range) * range);
+    }
+    
+    function int abs(int x) {
+        if (x < 0) {
+            return -x;
+        }
+        return x;
+    }
+    
+    function int max(int a, int b) {
+        if (a > b) {
+            return a;
+        }
+        return b;
+    }
+    
+    function int cos(int angle) {
+        if (angle = 0) { return 100; }
+        if (angle = 45) { return 71; }
+        if (angle = 90) { return 0; }
+        if (angle = 135) { return -71; }
+        if (angle = 180) { return -100; }
+        if (angle = 225) { return -71; }
+        if (angle = 270) { return 0; }
+        if (angle = 315) { return 71; }
+        return 0;
+    }
+    
+    function int sin(int angle) {
+        if (angle = 0) { return 0; }
+        if (angle = 45) { return 71; }
+        if (angle = 90) { return 100; }
+        if (angle = 135) { return 71; }
+        if (angle = 180) { return 0; }
+        if (angle = 225) { return -71; }
+        if (angle = 270) { return -100; }
+        if (angle = 315) { return -71; }
+        return 0;
+    }
+}

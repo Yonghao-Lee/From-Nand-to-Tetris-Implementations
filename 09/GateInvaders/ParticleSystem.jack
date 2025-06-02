@@ -1,0 +1,100 @@
+class ParticleSystem {
+    field Array particles;
+    field int count;
+    field int maxParticles;
+    
+    constructor ParticleSystem new() {
+        var int i;
+        var Particle p;
+        
+        let maxParticles = 50;
+        let particles = Array.new(maxParticles);
+        let count = maxParticles;
+        
+        let i = 0;
+        while (i < maxParticles) {
+            let p = Particle.new();
+            let particles[i] = p;
+            let i = i + 1;
+        }
+        return this;
+    }
+    
+    method void createExplosion(int x, int y) {
+        var int i, spawned, angle, speed;
+        var Particle p;
+        
+        let spawned = 0;
+        let i = 0;
+        
+        while ((i < count) & (spawned < 8)) {
+            let p = particles[i];
+            if (~p.isActive()) {
+                let angle = spawned * 45;
+                let speed = 3 + Utils.random(3);
+                do p.spawn(x, y, 
+                    (speed * Utils.cos(angle)) / 100,
+                    (speed * Utils.sin(angle)) / 100 - 2);
+                let spawned = spawned + 1;
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void update() {
+        var int i;
+        var Particle p;
+        
+        let i = 0;
+        while (i < count) {
+            let p = particles[i];
+            do p.update();
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void draw() {
+        var int i;
+        var Particle p;
+        
+        let i = 0;
+        while (i < count) {
+            let p = particles[i];
+            do p.draw();
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void clearAll() {
+        var int i;
+        var Particle p;
+        
+        let i = 0;
+        while (i < count) {
+            let p = particles[i];
+            if (p.isActive()) {
+                do p.erase();
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+    
+    method void dispose() {
+        var int i;
+        var Particle p;
+        
+        let i = 0;
+        while (i < count) {
+            let p = particles[i];
+            do p.dispose();
+            let i = i + 1;
+        }
+        do particles.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}

@@ -1,0 +1,123 @@
+
+class UI {
+    field int score;
+    field int lives;
+    field int level;
+    // Pre‑built strings allocated once to avoid per‑frame heap allocations
+    field String scoreLabel;
+    field String livesLabel;
+    field String levelLabel;
+    field String blank3;
+
+    constructor UI new() {
+        let scoreLabel = "Score: ";
+        let livesLabel = "Lives: ";
+        let levelLabel = "Level: ";
+        let blank3 = "   ";
+        return this;
+    }
+
+    method void drawTitleScreen() {
+        do Screen.clearScreen();
+
+        do Output.moveCursor(5, 20);
+        do Output.printString("GATE INVADERS");
+        do Output.moveCursor(6, 15);
+        do Output.printString("The HDL Wars: Episode NAND");
+
+        do Output.moveCursor(8, 10);
+        do Output.printString("Use ← / → arrows to move");
+        do Output.moveCursor(9, 10);
+        do Output.printString("SPACE to shoot ‑ P to pause");
+
+        do Output.moveCursor(11, 8);
+        do Output.printString("Defend the ALU from the evil Gate Fleet!");
+        do Output.moveCursor(13, 16);
+        do Output.printString("Press SPACE to start the battle");
+        return;
+    }
+
+    method void drawGameBorder() {
+        do Screen.drawLine(0, 0, 511, 0);
+        do Screen.drawLine(0, 255, 511, 255);
+        do Screen.drawLine(0, 245, 511, 245);
+        return;
+    }
+
+    method void updateScore(int s) {
+        let score = s;
+        do Output.moveCursor(22, 2);
+        do Output.printString(scoreLabel);
+        do Output.printInt(score);
+        do Output.printString(blank3);
+        return;
+    }
+
+    method void updateLives(int l) {
+        let lives = l;
+        do Output.moveCursor(22, 25);
+        do Output.printString(livesLabel);
+        do Output.printInt(lives);
+        return;
+    }
+
+    method void updateLevel(int lv) {
+        let level = lv;
+        do Output.moveCursor(22, 45);
+        do Output.printString(levelLabel);
+        do Output.printInt(level);
+        return;
+    }
+
+    method void displayMessage(String msg) {
+        // Clear previous message line with spaces (uses blank3 multiple times)
+        var int i;
+        let i = 0;
+        do Output.moveCursor(0, 0);
+        while (i < 64) {
+            do Output.printChar(32);
+            let i = i + 1;
+        }
+        // Centre and print the new message
+        do Output.moveCursor(0, (64 - msg.length()) / 2);
+        do Output.printString(msg);
+        return;
+    }
+
+    method void drawGameOver(int finalScore) {
+        do Screen.clearScreen();
+        do Output.moveCursor(10, 20);
+        do Output.printString("GAME OVER");
+        do Output.moveCursor(12, 18);
+        do Output.printString("Final Score: ");
+        do Output.printInt(finalScore);
+        do Output.moveCursor(14, 16);
+        do Output.printString("Press SPACE to try again");
+        return;
+    }
+
+    method void drawVictory(int finalScore) {
+        do Screen.clearScreen();
+        do Output.moveCursor(10, 18);
+        do Output.printString("VICTORY!");
+        do Output.moveCursor(12, 14);
+        do Output.printString("Final Score: ");
+        do Output.printInt(finalScore);
+        do Output.moveCursor(14, 8);
+        do Output.printString("The CPU is safe… for now!");
+        do Output.moveCursor(16, 10);
+        do Output.printString("NAND is all you need!");
+        do Output.moveCursor(18, 16);
+        do Output.printString("Press SPACE to play again");
+        return;
+    }
+
+    method void dispose() {
+        do scoreLabel.dispose();
+        do livesLabel.dispose();
+        do levelLabel.dispose();
+        do blank3.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+}
