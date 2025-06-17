@@ -9,79 +9,68 @@ import typing
 
 
 class SymbolTable:
-    """A symbol table that associates names with information needed for Jack
-    compilation: type, kind and running index. The symbol table has two nested
-    scopes (class/subroutine).
+    """A bi-level symbol table for Jack compilation.
+
+    Public API (matches the book):
+        * start_subroutine()               – reset sub-routine scope
+        * define(name, type_, kind)        – define a new identifier
+        * var_count(kind) -> int           – count of identifiers of kind
+        * kind_of(name)  -> str | None     – STATIC | FIELD | ARG | VAR | None
+        * type_of(name)  -> str | None     – declared type (class or primitive)
+        * index_of(name) -> int | None     – running index within its kind
     """
 
+    _VALID_KINDS = {"STATIC", "FIELD", "ARG", "VAR"}
+
     def __init__(self) -> None:
-        """Creates a new empty symbol table."""
-        # Your code goes here!
-        pass
+        self._class_scope: dict[str, dict[str, object]] = {}  # Class-level: STATIC/FIELD
+        self._sub_scope: dict[str, dict[str, object]] = {}    # Subroutine: ARG/VAR
+        self._counts: dict[str, int] = {k: 0 for k in self._VALID_KINDS}  # Running indexes
 
     def start_subroutine(self) -> None:
-        """Starts a new subroutine scope (i.e., resets the subroutine's 
-        symbol table).
-        """
-        # Your code goes here!
-        pass
+        """Reset ARG and VAR tables at start of each subroutine. Class scope stays."""
+        self._sub_scope.clear()
+        self._counts["ARG"] = 0
+        self._counts["VAR"] = 0
 
-    def define(self, name: str, type: str, kind: str) -> None:
-        """Defines a new identifier of a given name, type and kind and assigns 
-        it a running index. "STATIC" and "FIELD" identifiers have a class scope, 
-        while "ARG" and "VAR" identifiers have a subroutine scope.
+    def define(self, name: str, type_: str, kind: str) -> None:
+        """Define new identifier and assign it the next index of kind."""
+        kind = kind.upper()
+        if kind not in self._VALID_KINDS:
+            raise ValueError(f"Invalid kind: {kind}")
 
-        Args:
-            name (str): the name of the new identifier.
-            type (str): the type of the new identifier.
-            kind (str): the kind of the new identifier, can be:
-            "STATIC", "FIELD", "ARG", "VAR".
-        """
-        # Your code goes here!
-        pass
+        index: int = self._counts[kind]
+        entry = {"type": type_, "kind": kind, "index": index}
+
+        if kind in ("STATIC", "FIELD"):
+            self._class_scope[name] = entry
+        else:  # ARG or VAR
+            self._sub_scope[name] = entry
+
+        self._counts[kind] += 1
 
     def var_count(self, kind: str) -> int:
-        """
-        Args:
-            kind (str): can be "STATIC", "FIELD", "ARG", "VAR".
+        """Return number of variables of this kind already defined."""
+        kind = kind.upper()
+        if kind not in self._VALID_KINDS:
+            raise ValueError(f"Invalid kind: {kind}")
+        return self._counts[kind]
 
-        Returns:
-            int: the number of variables of the given kind already defined in 
-            the current scope.
-        """
-        # Your code goes here!
-        pass
+    def _lookup(self, name: str) -> dict[str, object] | None:
+        """Return entry for name, searching subroutine scope first, then class."""
+        return self._sub_scope.get(name) or self._class_scope.get(name)
 
-    def kind_of(self, name: str) -> str:
-        """
-        Args:
-            name (str): name of an identifier.
+    def kind_of(self, name: str):
+        """Return kind of name or None if not found."""
+        entry = self._lookup(name)
+        return entry["kind"] if entry else None
 
-        Returns:
-            str: the kind of the named identifier in the current scope, or None
-            if the identifier is unknown in the current scope.
-        """
-        # Your code goes here!
-        pass
+    def type_of(self, name: str):
+        """Return type of name or None if not found."""
+        entry = self._lookup(name)
+        return entry["type"] if entry else None
 
-    def type_of(self, name: str) -> str:
-        """
-        Args:
-            name (str):  name of an identifier.
-
-        Returns:
-            str: the type of the named identifier in the current scope.
-        """
-        # Your code goes here!
-        pass
-
-    def index_of(self, name: str) -> int:
-        """
-        Args:
-            name (str):  name of an identifier.
-
-        Returns:
-            int: the index assigned to the named identifier.
-        """
-        # Your code goes here!
-        pass
+    def index_of(self, name: str):
+        """Return index of name or None if not found."""
+        entry = self._lookup(name)
+        return entry["index"] if entry else None
